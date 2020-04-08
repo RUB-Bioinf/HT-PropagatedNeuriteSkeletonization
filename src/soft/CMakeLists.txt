@@ -1,0 +1,1 @@
+add_subdirectory(soft_2dskeletonization/)

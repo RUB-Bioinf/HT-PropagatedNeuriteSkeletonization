@@ -1,0 +1,37 @@
+language: cpp
+
+compiler:
+  - gcc
+
+before_install:
+  # g++4.9.1
+  - if [ "$CXX" == "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+
+  - sudo apt-get update -qq
+
+  # libraries install
+  - sudo apt-get install cmake git libboost-all-dev libeigen3-dev
+
+  # opencv 3 install
+  - git clone https://github.com/Itseez/opencv.git
+  - cd opencv
+  - mkdir release
+  - cd release
+  - cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
+  - make -j8
+  - sudo make install
+  - cd ../..
+  
+install:
+  # g++4.9.1
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.9; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi
+  - sudo rm /usr/bin/g++
+  - sudo ln -s /usr/bin/g++-4.9 /usr/bin/g++
+
+  # clang 3.4
+  - if [ "$CXX" == "clang++" ]; then sudo apt-get install --allow-unauthenticated -qq clang-3.4; fi
+  - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.4"; fi
+
+script:
+  - mkdir build && cd build && cmake .. && make

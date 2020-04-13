@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-enum-compare -Wno-deprec
 
 # Find the libraries
 find_package(Boost REQUIRED COMPONENTS unit_test_framework program_options system filesystem)
-find_package(EIGEN REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 message(STATUS "OpenCV version ${OpenCV_VERSION}")
 

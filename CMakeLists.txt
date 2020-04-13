@@ -28,6 +28,6 @@ set(SKELETON_LIB   "Skeleton")
 
 set(DISPLAYOCV_LIB "DisplayOCV")
 
-include_directories(${EIGEN_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIRS})
 
 add_subdirectory(src/)

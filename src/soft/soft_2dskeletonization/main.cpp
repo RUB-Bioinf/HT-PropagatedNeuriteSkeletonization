@@ -235,6 +235,11 @@ vector<pair<int, int>> getListFromPicture(Mat pic){
 
 int inputValuesRead(int argc, char** argv){
     boost::program_options::options_description desc("OPTIONS");
+    cout << inputImgDefault << std::endl;
+    cout << outputDefault << std::endl;
+    cout << epsilonValueDefault << std::endl;
+    cout << variableOutputNamesDefault << std::endl;
+    cout << skeletonImgNameDefault << std::endl;
 
     desc.add_options()
             ("help", "Help message")

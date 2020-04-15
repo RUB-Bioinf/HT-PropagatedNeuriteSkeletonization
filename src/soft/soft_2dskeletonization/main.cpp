@@ -76,7 +76,6 @@ Mat simpleReadAndConvertBW();
  * Reads the command line parameters and input it to globale params
  * @param argc System variable
  * @param argv System variable
- * @return Help decription failure
  */
 int inputValuesRead(int argc, char** argv);
 
@@ -277,6 +276,7 @@ int inputValuesRead(int argc, char** argv){
         std::cout << desc << std::endl;
         return 0;
     }
+    return 1;
 }
 
 string setVariableFilenames(string filenameSuffix, int i){

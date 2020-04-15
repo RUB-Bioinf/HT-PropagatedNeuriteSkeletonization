@@ -242,7 +242,7 @@ int inputValuesRead(int argc, char** argv){
 
     desc.add_options()
             ("help", "Help message")
-            ("imgfile", boost::program_options::value<std::string>(&imgfile)->default_value(inputImgDefault),
+            ("imgfile", boost::program_options::value<std::string>(&imgfile)->default_value("../ressources/"+ inputImgDefault),
                     "Greyscale image file with file extension")
             ("output", boost::program_options::value<bool>(&output)->default_value(outputDefault),
                     "Returns output images")
@@ -280,16 +280,18 @@ int inputValuesRead(int argc, char** argv){
 }
 
 string setVariableFilenames(string filenameSuffix, int i){
-    int filenameLength = inputImgDefault.length();
-    string filename = inputImgDefault.substr(0, filenameLength-4);
+    string first = imgfile.substr(14);
+    int filenameLength = first.length();
+    string filename = first.substr(0, filenameLength-4);
+
     string generatedFilename;
     if (i == 0){
-        generatedFilename = filename + filenameSuffix;
+        generatedFilename = "../output/" + filename + filenameSuffix;
     }else {
         stringstream ss;
         ss << i;
         string str = ss.str();
-        filename = filename + "_" + str;
+        filename = "../output/" + filename + "_" + str;
         generatedFilename = filename + filenameSuffix;
     }
     return generatedFilename;
@@ -297,7 +299,7 @@ string setVariableFilenames(string filenameSuffix, int i){
 
 cv::Mat simpleReadAndConvertBW() {
     Mat shpimggray = imread(imgfile);
-    cout << shpimggray << endl;
+    //cout << shpimggray << endl;
     if (shpimggray.empty()){
         throw logic_error("Wrong input data...");
     }

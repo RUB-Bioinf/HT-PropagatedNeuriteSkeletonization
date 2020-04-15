@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 
 //Declaration default values
-string inputImgDefault = "test.png";
+string inputImgDefault = "rat-01.png";
 string  skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 10.0;
@@ -155,9 +155,11 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double > 
 
 int main(int argc, char** argv)
 {
+    cout << "first line" << endl;
     inputValuesRead(argc, argv);
     if(variableOutputNames){
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
+        cout << skeletonImgName << endl;
     }
     Mat outClosing = simpleReadAndConvertBW();
 
@@ -249,6 +251,11 @@ int inputValuesRead(int argc, char** argv){
                     default_value(skeletonImgNameDefault), "Skeleton img file");
 
     boost::program_options::variables_map vm;
+    cout << imgfile << std::endl;
+    cout << output << std::endl;
+    cout << epsilon << std::endl;
+    cout << variableOutputNames << std::endl;
+    cout << skeletonImgName << std::endl;
     boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
     boost::program_options::notify(vm);
 
@@ -257,7 +264,8 @@ int inputValuesRead(int argc, char** argv){
         strs << epsilon;
         string str = strs.str();
         filenameEnding = "-Epsilon" + str + "px-skeleton.png";
-        int test = 1;
+        cout << filenameEnding << std::endl;
+
     }
 
     if (vm.count("help")) {
@@ -284,6 +292,7 @@ string setVariableFilenames(string filenameSuffix, int i){
 
 cv::Mat simpleReadAndConvertBW() {
     Mat shpimggray = imread(imgfile);
+    cout << shpimggray << endl;
     if (shpimggray.empty()){
         throw logic_error("Wrong input data...");
     }

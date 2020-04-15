@@ -33,7 +33,7 @@ SOFTWARE.
 #include <skeleton/Skeletons.h>
 #include <boundary/DiscreteBoundary2.h>
 
-#define _NB_CIRCLES_MAX_ 1000000
+#define _NB_CIRCLES_MAX_ 100000000
 
 /**
  *  @brief Lots of algorithms

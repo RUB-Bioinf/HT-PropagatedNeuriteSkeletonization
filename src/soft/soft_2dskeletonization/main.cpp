@@ -497,6 +497,8 @@ void splitContours(Mat src) {
                     imwrite("AfterThreshold.png", singleContour);
 
                     Mat element = getStructuringElement(cv::MORPH_RECT, Size(3, 3), Point(1, 1));
+                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);

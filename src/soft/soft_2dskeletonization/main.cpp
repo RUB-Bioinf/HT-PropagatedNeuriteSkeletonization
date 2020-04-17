@@ -438,7 +438,7 @@ void splitContours(Mat src) {
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
-//    imwrite("Mopho_Output.png", bw);
+    imwrite("Mopho_Output.png", bw);
 
     Mat dist;
     distanceTransform(bw, dist, DIST_L2, 3);
@@ -485,7 +485,7 @@ void splitContours(Mat src) {
         for (int i = 0; i <= contours.size(); i++) {
             if (hierarchy[i][3] == -1) {
                 double area = contourArea(contours[i]);
-                if (indx != 404 && !(area <= 100)) {
+                if (indx != 100000 && !(area <= 200)) {
                     Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
                     Scalar color(rand() & 255, rand() & 255, rand() & 255);
                     drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);
@@ -497,9 +497,9 @@ void splitContours(Mat src) {
                     imwrite("AfterThreshold.png", singleContour);
 
                     Mat element = getStructuringElement(cv::MORPH_RECT, Size(3, 3), Point(1, 1));
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("Mopho_Output.png", singleContour);
 
                     shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(

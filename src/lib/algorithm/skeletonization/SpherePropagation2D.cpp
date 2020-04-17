@@ -168,15 +168,13 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 		}while(!lctr.empty() && cpt != 0);
 	}
     int i = 0;
-	int failure = 0;
 	for(auto checkUsed : optiUsedBnd)
 	{
 
 	    if(!checkUsed.second)
-			//throw std::logic_error("Error while computing the skeleton");
-	        failure++;
+            //std::cout << "Count of non failures:" << i << std::endl;
+			throw std::logic_error("Error while computing the skeleton");
 	    i++;
 	}
-	std::cout << "Count of failures:" << failure << std::endl;
 	return skel;
 }

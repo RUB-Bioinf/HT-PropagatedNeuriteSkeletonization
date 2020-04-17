@@ -55,7 +55,7 @@ using namespace cv;
 
 //Declaration default values
 string inputImgDefault = "rat-01.png";
-string  skeletonImgNameDefault = "skeleton.png";
+string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 10.0;
 bool outputDefault = true;
@@ -69,7 +69,6 @@ double epsilon;
 bool variableOutputNames;
 
 
-
 Mat simpleReadAndConvertBW();
 
 /**
@@ -77,7 +76,7 @@ Mat simpleReadAndConvertBW();
  * @param argc System variable
  * @param argv System variable
  */
-int inputValuesRead(int argc, char** argv);
+int inputValuesRead(int argc, char **argv);
 
 /**
  * Generates variable file names
@@ -86,9 +85,9 @@ int inputValuesRead(int argc, char** argv);
  */
 string setVariableFilenames(string filenameSuffix, int i);
 
-tuple<double,double,int,int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
-                                      const boundary::DiscreteBoundary<2>::Ptr disbnd,
-                                      const skeleton::GraphSkel2d::Ptr skel);
+tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
+                                         const boundary::DiscreteBoundary<2>::Ptr disbnd,
+                                         const skeleton::GraphSkel2d::Ptr skel);
 
 /**
  * Generates a beautiful console Output
@@ -96,7 +95,7 @@ tuple<double,double,int,int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
  * @param t0 Working time of the algorithm
  * @param skeletonPointsCounter Counter for all skeleton points
  */
-void consoleOutputSingleData(tuple<double,double,int,int> respropag, int t0, int skeletonPointsCounter);
+void consoleOutputSingleData(tuple<double, double, int, int> respropag, int t0, int skeletonPointsCounter);
 
 /**
  * Print the Skeleton Counter for the hole Image
@@ -115,6 +114,7 @@ void consoleOutputCompleteData(int skeletonPointsCounter);
  */
 Mat generateCompleteImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd,
                           shape::DiscreteShape<2>::Ptr shppropag, skeleton::GraphSkel2d::Ptr grskelpropag, int i);
+
 /**
  * Generate the skeleton inputImage and returns it
  * @param inputImage input inputImage, origin inputImage for the program
@@ -122,7 +122,8 @@ Mat generateCompleteImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
  * @param grskelpropag skeleton
  * @return the matrix of the skeleton inputImage, zero = background and 255 = foreground, simple black and white inputImage
  */
-Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, skeleton::GraphSkel2d::Ptr grskelpropag, int i);
+Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, skeleton::GraphSkel2d::Ptr grskelpropag,
+                          int i);
 
 /**
  * Generate the boundary image and returns it
@@ -131,7 +132,8 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
  * @param disbnd boundary
  * @return the matrix of the boundary image, zero = background and 255 = foreground, simple black and white image
  */
-Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i);
+Mat
+generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i);
 
 /**
  * Generates a list with a pair of x and y coordinates of all skeleton point
@@ -139,6 +141,7 @@ Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
  * @return List with x and y coordinate pairs
  */
 list<pair<int, int>> getAllImageCoordinates(Mat img);
+
 /**
  * Writes the data from the given list into csv data
  * @param skeletonPoints list of x and y coordinates for the skeleton data
@@ -147,26 +150,24 @@ list<pair<int, int>> getAllImageCoordinates(Mat img);
 void writeCSVData(list<pair<int, int>> skeletonPoints, string filenameSuffix, int i);
 
 void splitContours(Mat src);
+
 vector<pair<int, int>> getListFromPicture(Mat pic);
 
-void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double > distanceList, list<int> timeList,
+void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
 
-int main(int argc, char** argv)
-{
-    cout << "first line" << endl;
+int main(int argc, char **argv) {
     inputValuesRead(argc, argv);
-    if(variableOutputNames){
+    if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
-        cout << skeletonImgName << endl;
     }
     Mat outClosing = simpleReadAndConvertBW();
 
     //exit program
-	return 0;
+    return 0;
 }
 
-vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int,int>> &list) {
+vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int, int>> &list) {
 
     int rows = pic.rows;
     int cols = pic.cols;
@@ -175,44 +176,46 @@ vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int
     rows = s.height;
     cols = s.width;
 
-    if(pic.at<uchar>(i+1,j) != 0){
-        pair<int,int> pair = make_pair(i+1,j);
-        if((std::find_if(list.begin(), list.end(),[&pair](const std::pair<int,int>& el){return el.first == pair.first && el.second == pair.second;})==list.end())) {
+    if (pic.at<uchar>(i + 1, j) != 0) {
+        pair<int, int> pair = make_pair(i + 1, j);
+        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
+            return el.first == pair.first && el.second == pair.second;
+        }) == list.end())) {
             list.push_back(pair);
-            return getListFromPicture(pic, i+1, j, list);
+            return getListFromPicture(pic, i + 1, j, list);
         }
-        else{
-
-        }
-
-    } if(pic.at<uchar>(i,j+1) != 0){
-        pair<int,int> pair = make_pair(i,j+1);
-        if((std::find_if(list.begin(), list.end(),[&pair](const std::pair<int,int>& el){return el.first == pair.first && el.second == pair.second;})==list.end())) {
+    }
+    if (pic.at<uchar>(i, j + 1) != 0) {
+        pair<int, int> pair = make_pair(i, j + 1);
+        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
+            return el.first == pair.first && el.second == pair.second;
+        }) == list.end())) {
             list.push_back(pair);
-            return getListFromPicture(pic, i, j+1, list);
+            return getListFromPicture(pic, i, j + 1, list);
         }
-        else{
-        }
-    }if(pic.at<uchar>(i-1,j) != 0){
-        pair<int,int> pair = make_pair(i-1,j);
-        if((std::find_if(list.begin(), list.end(),[&pair](const std::pair<int,int>& el){return el.first == pair.first && el.second == pair.second;})==list.end())) {
+    }
+    if (pic.at<uchar>(i - 1, j) != 0) {
+        pair<int, int> pair = make_pair(i - 1, j);
+        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
+            return el.first == pair.first && el.second == pair.second;
+        }) == list.end())) {
             list.push_back(pair);
-            return getListFromPicture(pic, i-1, j, list);
+            return getListFromPicture(pic, i - 1, j, list);
         }
-        else{
-        }
-    }if(pic.at<uchar>(i,j-1) != 0){
-        pair<int,int> pair = make_pair(i,j-1);
-        if((std::find_if(list.begin(), list.end(),[&pair](const std::pair<int,int>& el){return el.first == pair.first && el.second == pair.second;})==list.end())) {
+    }
+    if (pic.at<uchar>(i, j - 1) != 0) {
+        pair<int, int> pair = make_pair(i, j - 1);
+        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
+            return el.first == pair.first && el.second == pair.second;
+        }) == list.end())) {
             list.push_back(pair);
-            return getListFromPicture(pic, i, j-1, list);
+            return getListFromPicture(pic, i, j - 1, list);
         }
-        else{
-        }
-    }return list;
+    }
+    return list;
 }
 
-vector<pair<int, int>> getListFromPicture(Mat pic){
+vector<pair<int, int>> getListFromPicture(Mat pic) {
 
     int rows = pic.rows;
     int cols = pic.cols;
@@ -220,56 +223,44 @@ vector<pair<int, int>> getListFromPicture(Mat pic){
     cv::Size s = pic.size();
     rows = s.height;
     cols = s.width;
-    for(int i = 0; i < rows; i++){
-        for(int j = 0; j<cols; j++){
-            int x = pic.at<uchar>(i,j);
-            if(x != 0){
-                vector<pair<int,int>> liste = vector<pair<int,int>>();
-                liste.emplace_back(i,j);
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            int x = pic.at<uchar>(i, j);
+            if (x != 0) {
+                vector<pair<int, int>> liste = vector<pair<int, int>>();
+                liste.emplace_back(i, j);
                 return getListFromPicture(pic, i, j, liste);
             }
         }
     }
 }
 
-int inputValuesRead(int argc, char** argv){
+int inputValuesRead(int argc, char **argv) {
     boost::program_options::options_description desc("OPTIONS");
-    cout << inputImgDefault << std::endl;
-    cout << outputDefault << std::endl;
-    cout << epsilonValueDefault << std::endl;
-    cout << variableOutputNamesDefault << std::endl;
-    cout << skeletonImgNameDefault << std::endl;
-
     desc.add_options()
             ("help", "Help message")
-            ("imgfile", boost::program_options::value<std::string>(&imgfile)->default_value("../ressources/"+ inputImgDefault),
-                    "Greyscale image file with file extension")
+            ("imgfile",
+             boost::program_options::value<std::string>(&imgfile)->default_value("../ressources/" + inputImgDefault),
+             "Greyscale image file with file extension")
             ("output", boost::program_options::value<bool>(&output)->default_value(outputDefault),
-                    "Returns output images")
+             "Returns output images")
             ("epsilon", boost::program_options::value<double>(&epsilon)->default_value(epsilonValueDefault),
-                    "Skeleton precision")
+             "Skeleton precision")
             ("variableOutputNames", boost::program_options::value<bool>(&variableOutputNames)->
-                    default_value(variableOutputNamesDefault),
-                    "Variable Outputnames allowed")
+                     default_value(variableOutputNamesDefault),
+             "Variable Outputnames allowed")
             ("skeletonImgName", boost::program_options::value<string>(&skeletonImgName)->
                     default_value(skeletonImgNameDefault), "Skeleton img file");
 
     boost::program_options::variables_map vm;
-    cout << imgfile << std::endl;
-    cout << output << std::endl;
-    cout << epsilon << std::endl;
-    cout << variableOutputNames << std::endl;
-    cout << skeletonImgName << std::endl;
     boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
     boost::program_options::notify(vm);
 
-    if(epsilon != 1){
+    if (epsilon != 1) {
         ostringstream strs;
         strs << epsilon;
         string str = strs.str();
         filenameEnding = "-Epsilon" + str + "px-skeleton.png";
-        cout << filenameEnding << std::endl;
-
     }
 
     if (vm.count("help")) {
@@ -279,15 +270,15 @@ int inputValuesRead(int argc, char** argv){
     return 1;
 }
 
-string setVariableFilenames(string filenameSuffix, int i){
+string setVariableFilenames(string filenameSuffix, int i) {
     string first = imgfile.substr(14);
     int filenameLength = first.length();
-    string filename = first.substr(0, filenameLength-4);
+    string filename = first.substr(0, filenameLength - 4);
 
     string generatedFilename;
-    if (i == 0){
+    if (i == 0) {
         generatedFilename = "../output/" + filename + filenameSuffix;
-    }else {
+    } else {
         stringstream ss;
         ss << i;
         string str = ss.str();
@@ -300,7 +291,7 @@ string setVariableFilenames(string filenameSuffix, int i){
 cv::Mat simpleReadAndConvertBW() {
     Mat shpimggray = imread(imgfile);
     //cout << shpimggray << endl;
-    if (shpimggray.empty()){
+    if (shpimggray.empty()) {
         throw logic_error("Wrong input data...");
     }
     splitContours(shpimggray);
@@ -320,32 +311,30 @@ cv::Mat simpleReadAndConvertBW() {
     return shpimggray;
 }
 
-tuple<double,double,int,int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
-                                      const boundary::DiscreteBoundary<2>::Ptr disbnd,
-                                      const skeleton::GraphSkel2d::Ptr skel)
-{
-    shape::DiscreteShape<2>::Ptr shp(new shape::DiscreteShape<2>(dissh->getWidth(),dissh->getHeight()));
-    algorithm::skinning::Filling(shp,skel);
+tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
+                                         const boundary::DiscreteBoundary<2>::Ptr disbnd,
+                                         const skeleton::GraphSkel2d::Ptr skel) {
+    shape::DiscreteShape<2>::Ptr shp(new shape::DiscreteShape<2>(dissh->getWidth(), dissh->getHeight()));
+    algorithm::skinning::Filling(shp, skel);
 
-    double res = algorithm::evaluation::SymDiffArea(dissh,shp);
-    double res2 = algorithm::evaluation::HausDist(skel,disbnd,dissh->getFrame());
+    double res = algorithm::evaluation::SymDiffArea(dissh, shp);
+    double res2 = algorithm::evaluation::HausDist(skel, disbnd, dissh->getFrame());
 
     list<unsigned int> lnod;
     skel->getAllNodes(lnod);
     unsigned int nbbr = 0;
-    for(std::list<unsigned int>::iterator it = lnod.begin(); it != lnod.end(); it++)
-    {
+    for (std::list<unsigned int>::iterator it = lnod.begin(); it != lnod.end(); it++) {
         unsigned int deg = skel->getNodeDegree(*it);
-        if(deg != 2)
+        if (deg != 2)
             nbbr += deg;
     }
     nbbr /= 2;
-    tuple<double,double,int,int> result = std::make_tuple(res*100.0,res2,skel->getNbNodes(),nbbr);
+    tuple<double, double, int, int> result = std::make_tuple(res * 100.0, res2, skel->getNbNodes(), nbbr);
 
     return result;
 }
 
-void consoleOutputSingleData(tuple<double,double,int,int> respropag, int t0, int skeletonPointsCounter){
+void consoleOutputSingleData(tuple<double, double, int, int> respropag, int t0, int skeletonPointsCounter) {
     double A0 = get<0>(respropag); // sym area diff
     double H0 = get<1>(respropag); // Hausdorff dist
     int N0 = get<2>(respropag); // nb nodes
@@ -359,26 +348,25 @@ void consoleOutputSingleData(tuple<double,double,int,int> respropag, int t0, int
     cout << "Number of skeleton points: " << skeletonPointsCounter << endl;
 }
 
-void consoleOutputCompleteData(int skeletonPointsCounter){
+void consoleOutputCompleteData(int skeletonPointsCounter) {
     cout << "Number of skeleton points complete image: " << skeletonPointsCounter << endl;
 }
 
 Mat generateCompleteImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd,
-                          shape::DiscreteShape<2>::Ptr shppropag, skeleton::GraphSkel2d::Ptr grskelpropag, int i){
+                          shape::DiscreteShape<2>::Ptr shppropag, skeleton::GraphSkel2d::Ptr grskelpropag, int i) {
     /*Mat imagepropag;
     image.copyTo(imagepropag);*/
 
-    displayopencv::DisplayDiscreteShape(dissh,image,shppropag->getFrame(),
-            cv::Scalar(255,0,0));
-    displayopencv::DisplayDiscreteShape(shppropag,image,shppropag->getFrame(),
-            cv::Scalar(125,125,125));
-    displayopencv::DisplayDiscreteBoundary(disbnd,image,dissh->getFrame(),
-            cv::Scalar(0,0,0));
-    displayopencv::DisplayGraphSkeleton(grskelpropag,image,dissh->getFrame(),
-            cv::Scalar(255,0,0));
+    displayopencv::DisplayDiscreteShape(dissh, image, shppropag->getFrame(),
+                                        cv::Scalar(255, 0, 0));
+    displayopencv::DisplayDiscreteShape(shppropag, image, shppropag->getFrame(),
+                                        cv::Scalar(125, 125, 125));
+    displayopencv::DisplayDiscreteBoundary(disbnd, image, dissh->getFrame(),
+                                           cv::Scalar(0, 0, 0));
+    displayopencv::DisplayGraphSkeleton(grskelpropag, image, dissh->getFrame(),
+                                        cv::Scalar(255, 0, 0));
 
-    if( output && i == 0 || i != 859)
-    {
+    if (output && i == 0 || i != 859) {
         string filename = setVariableFilenames("-skeleton.png", i);
         imwrite(filename, image);
     }
@@ -386,21 +374,23 @@ Mat generateCompleteImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     return image;
 }
 
-Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, skeleton::GraphSkel2d::Ptr grskelpropag, int i){
+Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, skeleton::GraphSkel2d::Ptr grskelpropag,
+                          int i) {
     displayopencv::DisplayGraphSkeleton(grskelpropag, inputImage, dissh->getFrame(),
-                                        cv::Scalar(255,255,255));
+                                        cv::Scalar(255, 255, 255));
     string filename = setVariableFilenames("-SkeletonImg.png", i);
-    if (i == 0 || i != 859){
+    if (i == 0 || i != 859) {
         imwrite(filename, inputImage);
     }
     return inputImage;
 }
 
-Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i){
-    displayopencv::DisplayDiscreteBoundary(disbnd,image,dissh->getFrame(),
-                                           cv::Scalar(255,255,255));
+Mat
+generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i) {
+    displayopencv::DisplayDiscreteBoundary(disbnd, image, dissh->getFrame(),
+                                           cv::Scalar(255, 255, 255));
     string filename = setVariableFilenames("-BoundaryImg.png", i);
-    if (i == 0 || i != 859){
+    if (i == 0 || i != 859) {
         imwrite(filename, image);
     }
     return image;
@@ -410,8 +400,8 @@ list<pair<int, int>> getAllImageCoordinates(Mat img) {
     list<pair<int, int>> coordinateList;
     for (int y = 0; y < img.rows; y++) {
         for (int x = 0; x < img.cols; x++) {
-            uchar value = img.at<uchar >(y, x);
-            if(value != 0) {
+            uchar value = img.at<uchar>(y, x);
+            if (value != 0) {
                 coordinateList.push_back(make_pair(x, y));
             }
         }
@@ -421,15 +411,15 @@ list<pair<int, int>> getAllImageCoordinates(Mat img) {
 
 void writeCSVData(list<pair<int, int>> skeletonPoints, string filenameSuffix, int i) {
     string csvFilename = setVariableFilenames("-SkeletonData.csv", i);
-    ofstream csvFile (csvFilename);
-    for (pair<int, int> p : skeletonPoints){
+    ofstream csvFile(csvFilename);
+    for (pair<int, int> p : skeletonPoints) {
         csvFile << p.first << "," << p.second << "\n";
     }
     csvFile.close();
 }
 
-void splitContours(Mat src){
-    Mat kernel = (Mat_<float>(3,3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
+void splitContours(Mat src) {
+    Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
     Mat imgLaplacian;
     filter2D(src, imgLaplacian, CV_32F, kernel);
     Mat sharp;
@@ -446,14 +436,18 @@ void splitContours(Mat src){
     //create binary image
     Mat bw;
     cvtColor(imgResult, bw, COLOR_BGR2GRAY);
-    threshold(bw, bw, 40, 255, THRESH_BINARY |THRESH_OTSU);
+    threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
     //imwrite("Binary_image.png", bw);
-    resize(bw, bw, Size(bw.cols*3, bw.rows*3));
+    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
 //    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
 //    imwrite("Mopho_Output.png", bw);
+
+    Mat dist;
+    distanceTransform(bw, dist, DIST_L2, 3);
+    imwrite("Distance.png", dist);
 
 
     // create CV_8U of distance image, needed for find conturs
@@ -479,9 +473,9 @@ void splitContours(Mat src){
 //    imwrite("complete.png", test);
 
     //Only get the contours on the first layer (foreground contours)
-    if (!contours.empty() && !hierarchy.empty()){
+    if (!contours.empty() && !hierarchy.empty()) {
         Mat completeContour = Mat::zeros(dist_8u.size(), CV_8UC3);
-        Mat completeIMG(dist_8u.size(), CV_8UC3, Scalar(255,255,255));
+        Mat completeIMG(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
         Mat completeBoundary = Mat::zeros(dist_8u.size(), CV_8UC3);
         Mat completeSkeleton = Mat::zeros(dist_8u.size(), CV_8UC3);
 
@@ -492,49 +486,52 @@ void splitContours(Mat src){
         list<int> timeList;
 
         int indx = 1;
-        cout << contours.size() <<endl;
-        for(int i = 0; i<= contours.size(); i++){
-            if(hierarchy[i][3] == -1){
+        cout << contours.size() << endl;
+        for (int i = 0; i <= contours.size(); i++) {
+            if (hierarchy[i][3] == -1) {
                 double area = contourArea(contours[i]);
-                if (indx != 404 && !(area <= 100)){
+                if (indx != 404 && !(area <= 100)) {
                     Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
-                    Scalar color (rand()&255, rand()&255, rand()&255);
+                    Scalar color(rand() & 255, rand() & 255, rand() & 255);
                     drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);
                     drawContours(completeContour, contours, (int) i, color, FILLED, 8, hierarchy);
-                    imwrite("SingleContour.png" , singleContour);
+                    imwrite("SingleContour.png", singleContour);
 
-                    threshold(singleContour,singleContour,1,255,THRESH_BINARY);
+                    threshold(singleContour, singleContour, 1, 255, THRESH_BINARY);
                     cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
-                    imwrite("AfterThreshold.png" , singleContour);
+                    imwrite("AfterThreshold.png", singleContour);
 
-                    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
+                    Mat element = getStructuringElement(cv::MORPH_RECT, Size(3, 3), Point(1, 1));
 //                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
 //                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
 //                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("Mopho_Output.png", singleContour);
 
-                    shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(new shape::DiscreteShape<2>(singleContour.cols,
-                                                                                                                  singleContour.rows));
-                    Mat cpymat(singleContour.rows,singleContour.cols,CV_8U,&dissh->getContainer()[0]);
+                    shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(
+                            new shape::DiscreteShape<2>(singleContour.cols,
+                                                        singleContour.rows));
+                    Mat cpymat(singleContour.rows, singleContour.cols, CV_8U, &dissh->getContainer()[0]);
                     singleContour.copyTo(cpymat);
-                    Mat image(singleContour.rows,singleContour.cols,CV_8UC3,cv::Scalar(255,255,255));
+                    Mat image(singleContour.rows, singleContour.cols, CV_8UC3, cv::Scalar(255, 255, 255));
 
                     boundary::DiscreteBoundary<2>::Ptr disbnd = algorithm::extractboundary::NaiveBoundary(dissh);
 
                     auto start0 = std::chrono::steady_clock::now();
-                    algorithm::skeletonization::propagation::OptionsSphProp options(2.0*epsilon);
-                    skeleton::GraphSkel2d::Ptr grskelpropag = algorithm::skeletonization::propagation::SpherePropagation2D(disbnd,
-                                                                                                                           options);
+                    algorithm::skeletonization::propagation::OptionsSphProp options(2.0 * epsilon);
+                    skeleton::GraphSkel2d::Ptr grskelpropag = algorithm::skeletonization::propagation::SpherePropagation2D(
+                            disbnd,
+                            options);
                     auto duration0 = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start0);
-                    tuple<double,double,int,int> respropag = EvalSkel(dissh,disbnd,grskelpropag);
+                    tuple<double, double, int, int> respropag = EvalSkel(dissh, disbnd, grskelpropag);
                     int t0 = duration0.count();
 
 
-                    shape::DiscreteShape<2>::Ptr shppropag(new shape::DiscreteShape<2>(dissh->getWidth(),dissh->getHeight()));
-                    algorithm::skinning::Filling(shppropag,grskelpropag);
+                    shape::DiscreteShape<2>::Ptr shppropag(
+                            new shape::DiscreteShape<2>(dissh->getWidth(), dissh->getHeight()));
+                    algorithm::skinning::Filling(shppropag, grskelpropag);
 
 
-                    Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255,255,255));
+                    Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
                     generateCompleteImage(imagepropag, dissh, disbnd, shppropag, grskelpropag, indx);
                     generateCompleteImage(completeIMG, dissh, disbnd, shppropag, grskelpropag, 0);
 
@@ -568,8 +565,8 @@ void splitContours(Mat src){
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();
         consoleOutputCompleteData(SkeletonPointsCounterComplete);
-        imwrite("completeContour.png" , completeContour );
-    } else{
+        imwrite("completeContour.png", completeContour);
+    } else {
         throw logic_error("No contours found...");
     }
 
@@ -577,20 +574,21 @@ void splitContours(Mat src){
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-        list<int> skeletonPointSingleCountList, string filenameSuffix) {
+                        list<int> skeletonPointSingleCountList, string filenameSuffix) {
     string csvFilename = setVariableFilenames(filenameSuffix, 0);
-    ofstream csvFile (csvFilename);
-    csvFile << "Anzahl Nodes , Anzahl Branches , Hausdorff Distance (px), Berechnungszeit (ms), Skelettpunkte \n" ;
+    ofstream csvFile(csvFilename);
+    csvFile << "Anzahl Nodes , Anzahl Branches , Hausdorff Distance (px), Berechnungszeit (ms), Skelettpunkte \n";
     list<int>::iterator it1 = nodeList.begin();
-    list<int>::iterator it2 =branchList.begin();
-    list<double>::iterator it3 =distanceList.begin();
-    list<int>::iterator it4 =timeList.begin();
-    list<int>::iterator it5 =skeletonPointSingleCountList.begin();
-    if (nodeList.size() ==branchList.size() && branchList.size() == distanceList.size() && distanceList.size() ==
-        timeList.size() && timeList.size() == skeletonPointSingleCountList.size()){
+    list<int>::iterator it2 = branchList.begin();
+    list<double>::iterator it3 = distanceList.begin();
+    list<int>::iterator it4 = timeList.begin();
+    list<int>::iterator it5 = skeletonPointSingleCountList.begin();
+    if (nodeList.size() == branchList.size() && branchList.size() == distanceList.size() && distanceList.size() ==
+                                                                                            timeList.size() &&
+        timeList.size() == skeletonPointSingleCountList.size()) {
         for (; it1 != nodeList.end() && it2 != branchList.end() && it3 != distanceList.end() && it4 != timeList.end() &&
-               it5 != skeletonPointSingleCountList.end(); it1++, it2++, it3++, it4++, it5++){
-            csvFile << *it1 << "," << *it2 << "," << *it3 <<"," << *it4 <<"," << *it5 <<"\n";
+               it5 != skeletonPointSingleCountList.end(); it1++, it2++, it3++, it4++, it5++) {
+            csvFile << *it1 << "," << *it2 << "," << *it3 << "," << *it4 << "," << *it5 << "\n";
         }
     }
     csvFile.close();

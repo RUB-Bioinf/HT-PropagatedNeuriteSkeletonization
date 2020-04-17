@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 
 //Declaration default values
-string inputImgDefault = "test.png";
+string inputImgDefault = "oben2.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 10.0;
@@ -168,13 +168,7 @@ int main(int argc, char **argv) {
 }
 
 vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int, int>> &list) {
-
-    int rows = pic.rows;
-    int cols = pic.cols;
-
     cv::Size s = pic.size();
-    rows = s.height;
-    cols = s.width;
 
     if (pic.at<uchar>(i + 1, j) != 0) {
         pair<int, int> pair = make_pair(i + 1, j);
@@ -233,6 +227,7 @@ vector<pair<int, int>> getListFromPicture(Mat pic) {
             }
         }
     }
+    return vector<pair<int, int>>();
 }
 
 int inputValuesRead(int argc, char **argv) {

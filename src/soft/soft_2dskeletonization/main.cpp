@@ -438,11 +438,11 @@ void splitContours(Mat src) {
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
-    imwrite("Mopho_Output.png", bw);
+    imwrite("../output/Mopho_Output.png", bw);
 
-    Mat dist;
-    distanceTransform(bw, dist, DIST_L2, 3);
-    imwrite("Distance.png", dist);
+//    Mat dist;
+//    distanceTransform(bw, dist, DIST_L2, 3);
+//    imwrite("../output/Distance.png", dist);
 
 
     // create CV_8U of distance image, needed for find conturs
@@ -490,11 +490,11 @@ void splitContours(Mat src) {
                     Scalar color(rand() & 255, rand() & 255, rand() & 255);
                     drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);
                     drawContours(completeContour, contours, (int) i, color, FILLED, 8, hierarchy);
-                    imwrite("SingleContour.png", singleContour);
+                    imwrite("../output/SingleContour.png", singleContour);
 
                     threshold(singleContour, singleContour, 1, 255, THRESH_BINARY);
                     cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
-                    imwrite("AfterThreshold.png", singleContour);
+                    imwrite("../output/AfterThreshold.png", singleContour);
 
                     Mat element = getStructuringElement(cv::MORPH_RECT, Size(3, 3), Point(1, 1));
                     morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
@@ -502,7 +502,7 @@ void splitContours(Mat src) {
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-                    imwrite("Mopho_Output.png", singleContour);
+                    imwrite("../output/Mopho_Output.png", singleContour);
 
                     shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(
                             new shape::DiscreteShape<2>(singleContour.cols,

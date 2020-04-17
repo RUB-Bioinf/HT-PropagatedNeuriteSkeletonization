@@ -173,7 +173,8 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 
 	    if(!checkUsed.second)
             //std::cout << "Count of non failures:" << i << std::endl;
-			throw std::logic_error("Error while computing the skeleton");
+			continue;
+	    //throw std::logic_error("Error while computing the skeleton");
 	    i++;
 	}
 	return skel;

@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 
 //Declaration default values
-string inputImgDefault = "rat-01.png";
+string inputImgDefault = "oben.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 50.0;

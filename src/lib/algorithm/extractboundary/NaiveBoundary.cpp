@@ -114,10 +114,9 @@ boundary::DiscreteBoundary<2>::Ptr algorithm::extractboundary::NaiveBoundary(con
 		
 		double dist = (*(list_vert.begin()) - *(list_vert.rbegin())).norm();
 
-		if(dist > 1.5)
-            continue;
-//			throw std::logic_error("Wrong boundary...");
-
+		if(dist > 1.5){
+       			throw std::logic_error("Wrong boundary...");
+		}
 		bnd->addVerticesVector(list_vert);
 	}
 

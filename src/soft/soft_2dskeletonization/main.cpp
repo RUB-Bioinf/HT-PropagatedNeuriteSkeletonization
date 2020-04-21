@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 
 //Declaration default values
-string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_02_Alexa488_01.png";
+string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_01_Alexa488_02.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 10.0;
@@ -502,7 +502,7 @@ void splitContours(Mat src) {
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("../output/Mopho_Output.png", singleContour);
 
                     shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(

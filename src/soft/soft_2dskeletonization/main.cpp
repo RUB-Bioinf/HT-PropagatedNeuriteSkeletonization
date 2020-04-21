@@ -503,7 +503,7 @@ void splitContours(Mat src) {
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    //morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("../output/Mopho_Output.png", singleContour);
 
                     shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(

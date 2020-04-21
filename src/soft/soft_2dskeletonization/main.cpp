@@ -433,7 +433,7 @@ void splitContours(Mat src) {
     cvtColor(imgResult, bw, COLOR_BGR2GRAY);
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
     //imwrite("Binary_image.png", bw);
-//    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
+    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
 //    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
@@ -497,11 +497,11 @@ void splitContours(Mat src) {
                     imwrite("../output/AfterThreshold.png", singleContour);
 
                     Mat element = getStructuringElement(cv::MORPH_RECT, Size(3, 3), Point(1, 1));
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
 //                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("../output/Mopho_Output.png", singleContour);
 

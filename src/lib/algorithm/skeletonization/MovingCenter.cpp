@@ -60,7 +60,8 @@ const std::list<unsigned int>& algorithm::skeletonization::propagation::MovingCe
 }
 
 
-void algorithm::skeletonization::propagation::MovingCenter::computeContactData(const OptiBnd &optiBnd, double epsilon)
+void algorithm::skeletonization::propagation::MovingCenter::computeContactData(const OptiBnd &optiBnd, double epsilon,
+        std::map<std::pair<int, int>,std::vector<std::pair<int, int>>> &contractList)
 {
 	// computation of the closest indices
 	std::list<unsigned int> closestInds;
@@ -69,7 +70,7 @@ void algorithm::skeletonization::propagation::MovingCenter::computeContactData(c
 	// sort the closest indices around the center
 	angOrder(optiBnd,m_center,closestInds,m_closestOrdered);
 	// computation of the contact sets
-	contactSets(optiBnd,m_center,radMin+epsilon,m_closestOrdered,m_openDir,m_toErase);
+	contactSets(optiBnd,m_center,radMin+epsilon,m_closestOrdered,m_openDir,m_toErase, contractList);
 	
 	// computation of the radius
 	if(epsilon != 0.0)
@@ -93,7 +94,8 @@ void algorithm::skeletonization::propagation::MovingCenter::computeContactData(c
 bool algorithm::skeletonization::propagation::MovingCenter::propagate(const OptiBnd &optiBnd,
 																	  unsigned int dir,
 																	  double epsilon,
-																	  MovingCenter &mov) const
+																	  MovingCenter &mov,
+																	  std::map<std::pair<int, int>,std::vector<std::pair<int, int>>> &contractList) const
 {
 	unsigned int indBeg = dir;
 	unsigned int indEnd = (dir+1)%m_closestOrdered.size();
@@ -150,7 +152,7 @@ bool algorithm::skeletonization::propagation::MovingCenter::propagate(const Opti
 	if(converged)
 	{
 		mov = MovingCenter(center);
-		mov.computeContactData(optiBnd,epsilon);
+		mov.computeContactData(optiBnd,epsilon, contractList);
 		
 		// direction selection
 		unsigned int dirmov = 0;

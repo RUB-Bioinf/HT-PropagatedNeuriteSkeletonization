@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 
 //Declaration default values
-string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_01_Alexa488_01.png";
+string inputImgDefault = "boundaryError.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 50.0;
@@ -140,14 +140,14 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
  * @param img image with only the skeleton points
  * @return List with x and y coordinate pairs
  */
-list<pair<int, int>> getAllImageCoordinates(Mat img);
+vector<pair<int, int>> getAllImageCoordinates(Mat img);
 
 /**
  * Writes the data from the given list into csv data
  * @param skeletonPoints list of x and y coordinates for the skeleton data
  * @param filenameSuffix String for the filename suffix
  */
-void writeCSVData(list<pair<int, int>> skeletonPoints, string filenameSuffix, int i);
+void writeCSVData(vector<pair<int, int>> skeletonPoints, string filenameSuffix, int i);
 
 void splitContours(Mat src);
 
@@ -157,6 +157,7 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
 
 int main(int argc, char **argv) {
+    system("exec rm -r ../output/*");
     inputValuesRead(argc, argv);
     if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
@@ -391,8 +392,8 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
     return image;
 }
 
-list<pair<int, int>> getAllImageCoordinates(Mat img) {
-    list<pair<int, int>> coordinateList;
+vector<pair<int, int>> getAllImageCoordinates(Mat img) {
+    vector<pair<int, int>> coordinateList;
     for (int y = 0; y < img.rows; y++) {
         for (int x = 0; x < img.cols; x++) {
             uchar value = img.at<uchar>(y, x);
@@ -404,7 +405,7 @@ list<pair<int, int>> getAllImageCoordinates(Mat img) {
     return coordinateList;
 }
 
-void writeCSVData(list<pair<int, int>> skeletonPoints, string filenameSuffix, int i) {
+void writeCSVData(vector<pair<int, int>> skeletonPoints, string filenameSuffix, int i) {
     string csvFilename = setVariableFilenames("-SkeletonData.csv", i);
     ofstream csvFile(csvFilename);
     for (pair<int, int> p : skeletonPoints) {
@@ -412,6 +413,8 @@ void writeCSVData(list<pair<int, int>> skeletonPoints, string filenameSuffix, in
     }
     csvFile.close();
 }
+
+
 
 void splitContours(Mat src) {
     Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
@@ -433,7 +436,7 @@ void splitContours(Mat src) {
     cvtColor(imgResult, bw, COLOR_BGR2GRAY);
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
     //imwrite("Binary_image.png", bw);
-//    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
+    //resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
 //    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
@@ -485,7 +488,7 @@ void splitContours(Mat src) {
         for (int i = 0; i <= contours.size(); i++) {
             if (hierarchy[i][3] == -1) {
                 double area = contourArea(contours[i]);
-                if (indx != 100000 && !(area <= 200)) {
+                if (indx != 100000 && !(area <=1)) {
                     Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
                     Scalar color(rand() & 255, rand() & 255, rand() & 255);
                     drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);
@@ -516,8 +519,9 @@ void splitContours(Mat src) {
 
                     auto start0 = std::chrono::steady_clock::now();
                     algorithm::skeletonization::propagation::OptionsSphProp options(2.0 * epsilon);
+                    map<pair<int, int>, vector<pair<int, int>>> contractlist;
                     skeleton::GraphSkel2d::Ptr grskelpropag = algorithm::skeletonization::propagation::SpherePropagation2D(
-                            disbnd,
+                            contractlist, disbnd,
                             options);
                     auto duration0 = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start0);
                     tuple<double, double, int, int> respropag = EvalSkel(dissh, disbnd, grskelpropag);
@@ -542,8 +546,35 @@ void splitContours(Mat src) {
 
                     generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
 
-                    list<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
-                    list<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
+                    vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
+                    map<pair<int, int>, vector<pair<int, int>>> contractlist2;
+                    for (auto& t : contractlist){
+                        auto f = t.first;
+                        if((std::find(skelPointsList.begin(), skelPointsList.end(), f) != skelPointsList.end())){
+                            contractlist2.insert({f, t.second});
+                        }else{
+                           // std::cout << "found: " << f.first << "|" << f.second << std::endl;
+                        }
+                    }
+                    ofstream exp;
+                    exp.open("contractSet.csv");
+
+                    for(auto& t : contractlist2){
+                        auto first = t.first;
+                        auto list = t.second;
+                        bool first1 = true;
+                        for(auto& c : list){
+                            if (first1){
+                            exp << "(" << first.first << ", " << first.second << "); (" << c.first << ", " << c.second << ")" << std::endl;
+                               first1 = false;
+                            }else{
+                                exp << " ; (" << c.first << ", " << c.second << ")" << std::endl;
+                            }
+                        }
+                    }
+                    exp.flush();
+                    exp.close();
+                    vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
                     SparseMat newMat(skeletonImg);
                     int SkeletonPointsCounter = newMat.nzcount();
                     writeCSVData(skelPointsList, "-skeletonData.csv", indx);

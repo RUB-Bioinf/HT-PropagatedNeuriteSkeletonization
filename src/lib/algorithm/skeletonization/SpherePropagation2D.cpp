@@ -30,11 +30,6 @@ SOFTWARE.
 #include "SpherePropagation2D.h"
 #include "BoundaryOperations.h"
 #include "MovingCenter.h"
-#include <time.h>
-
-#include <iostream>
-#include <fstream>
-
 #include <unordered_map>
 
 struct PropagData
@@ -44,8 +39,9 @@ struct PropagData
 	unsigned int dir; // next direction to take
 };
 
-skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropagation2D(const boundary::DiscreteBoundary<2>::Ptr disbnd,
-																						const OptionsSphProp &options)
+skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropagation2D( std::map<std::pair<int, int>,
+        std::vector<std::pair<int, int>>> &contractList, const boundary::DiscreteBoundary<2>::Ptr disbnd,
+                const OptionsSphProp &options)
 {
 	skeleton::GraphSkel2d::Ptr skel(new skeleton::GraphSkel2d(skeleton::model::Classic<2>()));
 	
@@ -63,7 +59,7 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 	
 	// first moving center instance
 	algorithm::skeletonization::propagation::MovingCenter mov(firstPt);
-	mov.computeContactData(optiBnd,options.epsilon);
+	mov.computeContactData(optiBnd, options.epsilon, contractList);
 	
 	// search for a local maximum in the Voronoi diagram to be (quite) sure that we have a skeletal point (can actually be improved...)
 	bool maximised = true;
@@ -76,7 +72,7 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 			if(mov.getOpen()[i])
 			{
 				algorithm::skeletonization::propagation::MovingCenter movNextcur;
-				mov.propagate(optiBnd,i,options.epsilon,movNextcur);
+				mov.propagate(optiBnd,i,options.epsilon,movNextcur, contractList);
 				
 				if(!maximised)
 				{
@@ -101,7 +97,7 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 	
 	// first moving center
 	mov = algorithm::skeletonization::propagation::MovingCenter(mov.getCenter());
-	mov.computeContactData(optiBnd,options.epsilon);
+	mov.computeContactData(optiBnd, options.epsilon, contractList);
 	
 	// add it to the skeleton
 	unsigned int ind = skel->addNode(Eigen::Vector3d(mov.getCenter().x(),mov.getCenter().y(),mov.getRadius()));
@@ -129,7 +125,7 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 			lctr.pop_front();
 			
 			algorithm::skeletonization::propagation::MovingCenter movNext;
-			if(curData.mov.propagate(optiBnd,curData.dir,options.epsilon,movNext))
+			if(curData.mov.propagate(optiBnd,curData.dir,options.epsilon,movNext, contractList))
 			{
 				cleanOptiBnd(optiBnd,optiUsedBnd,movNext.getToErase(),movNext.getClosestInds());
 
@@ -167,16 +163,11 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 			cpt--;
 		}while(!lctr.empty() && cpt != 0);
 	}
-    int i = 0;
 	for(auto checkUsed : optiUsedBnd)
 	{
-
-	    if(!checkUsed.second)
-            continue;
-//	    throw std::logic_error("Error while computing the skeleton");
-
-        continue;
-	    i++;
+	    if(!checkUsed.second){
+            throw std::logic_error("Error while computing the skeleton");
+        }
 	}
 	return skel;
 }

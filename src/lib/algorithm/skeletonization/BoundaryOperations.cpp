@@ -27,6 +27,8 @@ SOFTWARE.
  *  @author Bastien Durix
  */
 
+#include <opencv2/core/types.hpp>
+#include <iostream>
 #include "BoundaryOperations.h"
 
 double algorithm::skeletonization::propagation::closestInd(const OptiBnd &optiBnd,
@@ -295,13 +297,27 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
 													 	 double distMax,
 													 	 unsigned int indBeg,
 													 	 unsigned int indEnd,
-													 	 std::list<unsigned int> &toErase)
+													 	 std::list<unsigned int> &toErase,
+													 	 std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList)
 {
 	auto itBeg = optiBnd.find(indBeg);
 	auto itCur = optiBnd.find(itBeg->second.next);
 	toErase.clear();
 
-	bool fini = false;
+    std::vector<std::pair<int, int>> coordinateList;
+    std::pair<int, int> centerPair = std::make_pair(center.x(), center.y());
+
+    Eigen::Vector2d vec1 = itBeg->second.coords;
+    std::pair<int, int> p1 = std::make_pair(vec1.x(), vec1.y());
+    coordinateList.push_back(p1);
+
+    Eigen::Vector2d vec2 = itCur->second.coords;
+    std::pair<int, int> p2 = std::make_pair(vec2.x(), vec2.y());
+    coordinateList.push_back(p2);
+
+    cv::Point pt3(0,0);
+
+    bool fini = false;
 	bool open = true;
 
 	while(!fini)
@@ -331,16 +347,26 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
 			{
 				toErase.push_back(itCur->first);
 				itCur = optiBnd.find(itCur->second.next);
-			}
+                Eigen::Vector2d vec3 = itCur->second.coords;
+                //x und y Werte des nächsten Indexes
+                std::pair<int, int> p3 = std::make_pair(vec3.x(), vec3.y());
+                coordinateList.push_back(p3);
+            }
 		}
 	}
-	
+    if(contractList.find(centerPair) != contractList.end()){
+        contractList[centerPair].insert(contractList[centerPair].end(), coordinateList.begin(), coordinateList.end());
+    }else{
+        contractList.insert({centerPair, coordinateList});
+    }
 	if(open)
 	{
 		toErase.clear();
 	}
-	
-	return open;
+//    for (auto& t : contractList)
+//        std::cout << t.first.first << " " << t.first.second << std::endl;
+//    std::cout << "-----------------------------------------------------" << std::endl;
+    return open;
 }
 
 void algorithm::skeletonization::propagation::contactSets(const OptiBnd &optiBnd,
@@ -348,13 +374,14 @@ void algorithm::skeletonization::propagation::contactSets(const OptiBnd &optiBnd
 														  const double &distMax,
 														  const std::vector<unsigned int> &closestIndsOrdered,
 														  std::vector<bool> &open,
-														  std::list<unsigned int> &toErase)
+														  std::list<unsigned int> &toErase,
+                                                          std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList)
 {
 	open.resize(closestIndsOrdered.size());
 	for(unsigned int i = 0; i < closestIndsOrdered.size(); i++)
 	{
 		std::list<unsigned int> toErase_i;
-		open[i] = contactSet(optiBnd,center,distMax,closestIndsOrdered[i],closestIndsOrdered[(i+1)%closestIndsOrdered.size()],toErase_i);
+		open[i] = contactSet(optiBnd,center,distMax,closestIndsOrdered[i],closestIndsOrdered[(i+1)%closestIndsOrdered.size()],toErase_i, contractList);
 		toErase.insert(toErase.end(),toErase_i.begin(),toErase_i.end());
 	}
 	

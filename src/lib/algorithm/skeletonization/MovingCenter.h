@@ -127,7 +127,8 @@ namespace algorithm
 					 * @param optiBnd Unused boundary points
 					 * @param epsilon Pruning parameter
 					 */
-					void computeContactData(const OptiBnd &optiBnd, double epsilon);
+					void computeContactData(const OptiBnd &optiBnd, double epsilon,
+					        std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList);
 
 					/**
 					 * @brief  Propagates the center in a given direction
@@ -140,7 +141,8 @@ namespace algorithm
 					bool propagate(const OptiBnd &optiBnd,
 								   unsigned int dir,
 								   double epsilon,
-								   MovingCenter &mov) const;
+								   MovingCenter &mov,
+								   std::map<std::pair<int, int>,std::vector<std::pair<int, int>>> &contractList) const;
 					
 					/**
 					 * @brief Checks if two circles are neighbors for a given direction

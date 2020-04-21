@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 
 //Declaration default values
-string inputImgDefault = "boundaryError.png";
+string inputImgDefault = "test.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 1.0;
@@ -435,8 +435,8 @@ void splitContours(Mat src) {
     Mat bw;
     cvtColor(imgResult, bw, COLOR_BGR2GRAY);
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
-    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
-    morphologyEx(bw, bw, MORPH_CLOSE, element);
+//    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
+//    morphologyEx(bw, bw, MORPH_CLOSE, element);
 
     //imwrite("Binary_image.png", bw);
     //resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
@@ -562,7 +562,7 @@ void splitContours(Mat src) {
                         }
                     }
                     ofstream exp;
-                    exp.open("contractSet.csv");
+                    exp.open("../output/contractSet.csv");
 
                     for(auto& t : contractlist2){
                         auto first = t.first;

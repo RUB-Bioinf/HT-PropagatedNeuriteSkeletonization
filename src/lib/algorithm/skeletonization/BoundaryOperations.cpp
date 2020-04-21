@@ -301,7 +301,14 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
 													 	 std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList)
 {
 	auto itBeg = optiBnd.find(indBeg);
+	if(itBeg == optiBnd.end()){
+        throw std::logic_error("Er ist tod Jim1...");
+	}
 	auto itCur = optiBnd.find(itBeg->second.next);
+    if(itCur == optiBnd.end()){
+        return false;
+        //throw std::logic_error("Er ist tod Jim2...");
+    }
 	toErase.clear();
 
     std::vector<std::pair<int, int>> coordinateList;
@@ -314,8 +321,6 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
     Eigen::Vector2d vec2 = itCur->second.coords;
     std::pair<int, int> p2 = std::make_pair(vec2.x(), vec2.y());
     coordinateList.push_back(p2);
-
-    cv::Point pt3(0,0);
 
     bool fini = false;
 	bool open = true;
@@ -347,10 +352,14 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
 			{
 				toErase.push_back(itCur->first);
 				itCur = optiBnd.find(itCur->second.next);
-                Eigen::Vector2d vec3 = itCur->second.coords;
-                //x und y Werte des nächsten Indexes
-                std::pair<int, int> p3 = std::make_pair(vec3.x(), vec3.y());
-                coordinateList.push_back(p3);
+                if(itCur == optiBnd.end()){
+                    continue;
+                    //throw std::logic_error("Er ist tod Jim3...");
+                }
+				Eigen::Vector2d vec3 = itCur->second.coords;
+				//x und y Werte des nächsten Indexes
+				std::pair<int, int> p3 = std::make_pair(vec3.x(), vec3.y());
+				coordinateList.push_back(p3);
             }
 		}
 	}

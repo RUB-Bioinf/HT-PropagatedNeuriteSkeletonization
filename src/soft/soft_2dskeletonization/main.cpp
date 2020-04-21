@@ -432,6 +432,9 @@ void splitContours(Mat src) {
     Mat bw;
     cvtColor(imgResult, bw, COLOR_BGR2GRAY);
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
+    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
+    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+
     //imwrite("Binary_image.png", bw);
     resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
 //    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
@@ -501,7 +504,6 @@ void splitContours(Mat src) {
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("../output/Mopho_Output.png", singleContour);
 

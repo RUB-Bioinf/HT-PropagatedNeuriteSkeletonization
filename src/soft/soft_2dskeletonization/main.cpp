@@ -54,10 +54,10 @@ using namespace std;
 using namespace cv;
 
 //Declaration default values
-string inputImgDefault = "boundaryError.png";
+string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_01_Alexa488_01.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
-double epsilonValueDefault = 50.0;
+double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
 
@@ -435,8 +435,11 @@ void splitContours(Mat src) {
     Mat bw;
     cvtColor(imgResult, bw, COLOR_BGR2GRAY);
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
+    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
+    morphologyEx(bw, bw, MORPH_CLOSE, element);
+
     //imwrite("Binary_image.png", bw);
-    //resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
+    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
 //    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
 //    morphologyEx(bw, bw, MORPH_DILATE, element);
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
@@ -499,13 +502,11 @@ void splitContours(Mat src) {
                     cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
                     imwrite("../output/AfterThreshold.png", singleContour);
 
-                    Mat element = getStructuringElement(cv::MORPH_RECT, Size(3, 3), Point(1, 1));
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+                    //morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("../output/Mopho_Output.png", singleContour);
 
                     shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(

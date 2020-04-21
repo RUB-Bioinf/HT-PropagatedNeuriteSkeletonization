@@ -52,7 +52,7 @@ SOFTWARE.
 
 using namespace std;
 using namespace cv;
-
+//TODO delete
 //Declaration default values
 string inputImgDefault = "test.png";
 string skeletonImgNameDefault = "skeleton.png";

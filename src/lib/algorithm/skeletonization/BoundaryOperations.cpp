@@ -301,26 +301,21 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
 													 	 std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList)
 {
 	auto itBeg = optiBnd.find(indBeg);
-	if(itBeg == optiBnd.end()){
-        throw std::logic_error("Er ist tod Jim1...");
-	}
-	auto itCur = optiBnd.find(itBeg->second.next);
-    if(itCur == optiBnd.end()){
-        return false;
-        //throw std::logic_error("Er ist tod Jim2...");
-    }
-	toErase.clear();
-
+    auto itCur = optiBnd.find(itBeg->second.next);
     std::vector<std::pair<int, int>> coordinateList;
-    std::pair<int, int> centerPair = std::make_pair(center.x(), center.y());
 
-    Eigen::Vector2d vec1 = itBeg->second.coords;
-    std::pair<int, int> p1 = std::make_pair(vec1.x(), vec1.y());
-    coordinateList.push_back(p1);
+    if(itBeg != optiBnd.end()){
+        Eigen::Vector2d vec1 = itBeg->second.coords;
+        std::pair<int, int> p1 = std::make_pair(vec1.x(), vec1.y());
+        coordinateList.push_back(p1);
+    }
+    if(itCur != optiBnd.end()){
+        Eigen::Vector2d vec2 = itCur->second.coords;
+        std::pair<int, int> p2 = std::make_pair(vec2.x(), vec2.y());
+        coordinateList.push_back(p2);
+    }
 
-    Eigen::Vector2d vec2 = itCur->second.coords;
-    std::pair<int, int> p2 = std::make_pair(vec2.x(), vec2.y());
-    coordinateList.push_back(p2);
+	toErase.clear();
 
     bool fini = false;
 	bool open = true;
@@ -364,6 +359,8 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
             }
 		}
 	}
+    std::pair<int, int> centerPair = std::make_pair(center.x(), center.y());
+
     if(contractList.find(centerPair) != contractList.end()){
         contractList[centerPair].insert(contractList[centerPair].end(), coordinateList.begin(), coordinateList.end());
     }else{

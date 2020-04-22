@@ -54,10 +54,10 @@ using namespace std;
 using namespace cv;
 //TODO delete
 //Declaration default values
-string inputImgDefault = "square.png";
+string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_01_Alexa488_01.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
-double epsilonValueDefault = 1.0;
+double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
 

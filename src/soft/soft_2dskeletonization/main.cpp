@@ -489,7 +489,7 @@ void splitContours(Mat src) {
         for (int i = 0; i <= contours.size(); i++) {
             if (hierarchy[i][3] == -1) {
                 double area = contourArea(contours[i]);
-                if (indx != 100000 && !(area <=1)) {
+                if (indx != 100000 && !(area <=100)) {
                     Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
                     Scalar color(rand() & 255, rand() & 255, rand() & 255);
                     drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);
@@ -500,8 +500,8 @@ void splitContours(Mat src) {
                     cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
 //                    imwrite("../output/AfterThreshold.png", singleContour);
 //
-                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
 //                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
 //                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
                     //morphologyEx(singleContour, singleContour, MORPH_DILATE, element);

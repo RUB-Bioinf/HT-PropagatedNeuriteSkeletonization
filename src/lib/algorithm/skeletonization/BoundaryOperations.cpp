@@ -298,7 +298,7 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
 													 	 unsigned int indBeg,
 													 	 unsigned int indEnd,
 													 	 std::list<unsigned int> &toErase,
-													 	 std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList)
+													 	 std::map<std::pair<int, int>, std::vector<std::vector<std::pair<int, int>>>> &contractList)
 {
 	auto itBeg = optiBnd.find(indBeg);
     auto itCur = optiBnd.find(itBeg->second.next);
@@ -362,10 +362,15 @@ bool algorithm::skeletonization::propagation::contactSet(const OptiBnd &optiBnd,
     std::pair<int, int> centerPair = std::make_pair(center.x(), center.y());
 
     if(contractList.find(centerPair) != contractList.end()){
-        contractList[centerPair].insert(contractList[centerPair].end(), coordinateList.begin(), coordinateList.end());
+     //   contractList[centerPair].insert(contractList[centerPair].end(), coordinateList.begin(), coordinateList.end());
+        contractList[centerPair].push_back(coordinateList);
     }else{
-        contractList.insert({centerPair, coordinateList});
+    //    contractList.insert({centerPair, coordinateList});
+        std::vector<std::vector<std::pair<int, int>>> tmp;
+        tmp.push_back(coordinateList);
+        contractList.insert({centerPair, tmp});
     }
+
 	if(open)
 	{
 		toErase.clear();
@@ -382,7 +387,7 @@ void algorithm::skeletonization::propagation::contactSets(const OptiBnd &optiBnd
 														  const std::vector<unsigned int> &closestIndsOrdered,
 														  std::vector<bool> &open,
 														  std::list<unsigned int> &toErase,
-                                                          std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList)
+                                                          std::map<std::pair<int, int>, std::vector<std::vector<std::pair<int, int>>>> &contractList)
 {
 	open.resize(closestIndsOrdered.size());
 	for(unsigned int i = 0; i < closestIndsOrdered.size(); i++)

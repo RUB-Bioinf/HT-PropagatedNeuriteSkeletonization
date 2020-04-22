@@ -40,7 +40,7 @@ struct PropagData
 };
 
 skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropagation2D( std::map<std::pair<int, int>,
-        std::vector<std::pair<int, int>>> &contractList, const boundary::DiscreteBoundary<2>::Ptr disbnd,
+        std::vector<std::vector<std::pair<int, int>>>> &contractList, const boundary::DiscreteBoundary<2>::Ptr disbnd,
                 const OptionsSphProp &options)
 {
 	skeleton::GraphSkel2d::Ptr skel(new skeleton::GraphSkel2d(skeleton::model::Classic<2>()));

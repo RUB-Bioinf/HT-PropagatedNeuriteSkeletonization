@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 //TODO delete
 //Declaration default values
-string inputImgDefault = "test.png";
+string inputImgDefault = "square.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 1.0;
@@ -520,7 +520,7 @@ void splitContours(Mat src) {
 
                     auto start0 = std::chrono::steady_clock::now();
                     algorithm::skeletonization::propagation::OptionsSphProp options(2.0 * epsilon);
-                    map<pair<int, int>, vector<pair<int, int>>> contractlist;
+                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist;
                     skeleton::GraphSkel2d::Ptr grskelpropag = algorithm::skeletonization::propagation::SpherePropagation2D(
                             contractlist, disbnd,
                             options);
@@ -552,7 +552,7 @@ void splitContours(Mat src) {
 
 
                     vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
-                    map<pair<int, int>, vector<pair<int, int>>> contractlist2;
+                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist2;
                     for (auto& t : contractlist){
                         auto f = t.first;
                         if((std::find(skelPointsList.begin(), skelPointsList.end(), f) != skelPointsList.end())){
@@ -568,14 +568,15 @@ void splitContours(Mat src) {
                         auto first = t.first;
                         auto list = t.second;
                         bool first1 = true;
-                        for(auto& c : list){
-                            if (first1){
-                            exp << "(" << first.first << ", " << first.second << "); (" << c.first << ", " << c.second << ")" << std::endl;
-                               first1 = false;
-                            }else{
-                                exp << " ; (" << c.first << ", " << c.second << ")" << std::endl;
+                        exp << "(" << first.first << ", " << first.second << ");";
+                        for(auto& list2 : list) {
+                            for(auto& e : list2) {
+                                exp << "(" << e.first << ", " << e.second << ")";
                             }
+                            exp << ";";
                         }
+                        exp << std::endl;
+
                     }
                     exp.flush();
                     exp.close();

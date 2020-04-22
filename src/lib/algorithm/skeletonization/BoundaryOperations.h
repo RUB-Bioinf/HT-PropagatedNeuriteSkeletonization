@@ -133,7 +133,7 @@ namespace algorithm
 							unsigned int indBeg,
 							unsigned int indEnd,
 							std::list<unsigned int> &toErase,
-                            std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList);
+                            std::map<std::pair<int, int>, std::vector<std::vector<std::pair<int, int>>>> &contractList);
 			
 			/**
 			 * @brief Computes the contact sets between each pair of closest points
@@ -150,7 +150,7 @@ namespace algorithm
 							 const std::vector<unsigned int> &closestIndsOrdered,
 							 std::vector<bool> &open,
 							 std::list<unsigned int> &toErase,
-                             std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> &contractList);
+                             std::map<std::pair<int, int>, std::vector<std::vector<std::pair<int, int>>>> &contractList);
 			
 			/**
 			 * @brief Creates a structure to optimize the computation of the skeleton

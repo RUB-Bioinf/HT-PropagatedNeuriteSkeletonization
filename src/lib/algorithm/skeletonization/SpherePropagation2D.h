@@ -79,7 +79,7 @@ namespace algorithm
 			 *  @return Pointer to the computed 2d graph skeleton
 			 */
 			skeleton::GraphSkel2d::Ptr SpherePropagation2D(
-                    std::map<std::pair<int, int>,std::vector<std::pair<int, int>>> &contractList,
+                    std::map<std::pair<int, int>,std::vector<std::vector<std::pair<int, int>>>> &contractList,
                             const boundary::DiscreteBoundary<2>::Ptr disbnd,
                             const OptionsSphProp &options = OptionsSphProp());
 		}

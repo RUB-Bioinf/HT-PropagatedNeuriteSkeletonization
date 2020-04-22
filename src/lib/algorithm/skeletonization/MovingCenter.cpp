@@ -61,7 +61,7 @@ const std::list<unsigned int>& algorithm::skeletonization::propagation::MovingCe
 
 
 void algorithm::skeletonization::propagation::MovingCenter::computeContactData(const OptiBnd &optiBnd, double epsilon,
-        std::map<std::pair<int, int>,std::vector<std::pair<int, int>>> &contractList)
+        std::map<std::pair<int, int>,std::vector<std::vector<std::pair<int, int>>>> &contractList)
 {
 	// computation of the closest indices
 	std::list<unsigned int> closestInds;
@@ -95,7 +95,7 @@ bool algorithm::skeletonization::propagation::MovingCenter::propagate(const Opti
 																	  unsigned int dir,
 																	  double epsilon,
 																	  MovingCenter &mov,
-																	  std::map<std::pair<int, int>,std::vector<std::pair<int, int>>> &contractList) const
+																	  std::map<std::pair<int, int>,std::vector<std::vector<std::pair<int, int>>>> &contractList) const
 {
 	unsigned int indBeg = dir;
 	unsigned int indEnd = (dir+1)%m_closestOrdered.size();

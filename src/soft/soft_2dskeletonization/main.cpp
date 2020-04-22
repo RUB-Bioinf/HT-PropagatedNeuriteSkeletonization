@@ -54,7 +54,7 @@ using namespace std;
 using namespace cv;
 //TODO delete
 //Declaration default values
-string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_03_Alexa488_01.png";
+string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_03_Alexa488_02.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 10.0;

@@ -166,7 +166,8 @@ skeleton::GraphSkel2d::Ptr algorithm::skeletonization::propagation::SpherePropag
 	for(auto checkUsed : optiUsedBnd)
 	{
 	    if(!checkUsed.second){
-            throw std::logic_error("Error while computing the skeleton");
+	        continue;
+            //throw std::logic_error("Error while computing the skeleton");
         }
 	}
 	return skel;

@@ -439,11 +439,9 @@ void splitContours(Mat src) {
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
 
     //imwrite("Binary_image.png", bw);
-    //resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
-//    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
-//    morphologyEx(bw, bw, MORPH_DILATE, element);
-//    morphologyEx(bw, bw, MORPH_CLOSE, element);
-//    morphologyEx(bw, bw, MORPH_DILATE, element);
+    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
+    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
+    morphologyEx(bw, bw, MORPH_CLOSE, element);
     imwrite("../output/Mopho_Output.png", bw);
 
 //    Mat dist;
@@ -502,12 +500,12 @@ void splitContours(Mat src) {
                     cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
 //                    imwrite("../output/AfterThreshold.png", singleContour);
 //
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
+                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
 //                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
 //                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
                     //morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    imwrite("../output/Mopho_Output.png", singleContour);
+                    imwrite("../output/Mopho_Output.png", singleContour);
 
                     shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(
                             new shape::DiscreteShape<2>(singleContour.cols,
@@ -552,34 +550,34 @@ void splitContours(Mat src) {
 
 
                     vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
-                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist2;
-                    for (auto& t : contractlist){
-                        auto f = t.first;
-                        if((std::find(skelPointsList.begin(), skelPointsList.end(), f) != skelPointsList.end())){
-                            contractlist2.insert({f, t.second});
-                        }else{
-                           // std::cout << "found: " << f.first << "|" << f.second << std::endl;
-                        }
-                    }
-                    ofstream exp;
-                    exp.open("../output/contractSet.csv");
-
-                    for(auto& t : contractlist2){
-                        auto first = t.first;
-                        auto list = t.second;
-                        bool first1 = true;
-                        exp << "(" << first.first << ", " << first.second << ");";
-                        for(auto& list2 : list) {
-                            for(auto& e : list2) {
-                                exp << "(" << e.first << ", " << e.second << ")";
-                            }
-                            exp << ";";
-                        }
-                        exp << std::endl;
-
-                    }
-                    exp.flush();
-                    exp.close();
+//                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist2;
+//                    for (auto& t : contractlist){
+//                        auto f = t.first;
+//                        if((std::find(skelPointsList.begin(), skelPointsList.end(), f) != skelPointsList.end())){
+//                            contractlist2.insert({f, t.second});
+//                        }else{
+//                           // std::cout << "found: " << f.first << "|" << f.second << std::endl;
+//                        }
+//                    }
+//                    ofstream exp;
+//                    exp.open("../output/contractSet.csv");
+//
+//                    for(auto& t : contractlist2){
+//                        auto first = t.first;
+//                        auto list = t.second;
+//                        bool first1 = true;
+//                        exp << "(" << first.first << ", " << first.second << ");";
+//                        for(auto& list2 : list) {
+//                            for(auto& e : list2) {
+//                                exp << "(" << e.first << ", " << e.second << ")";
+//                            }
+//                            exp << ";";
+//                        }
+//                        exp << std::endl;
+//
+//                    }
+//                    exp.flush();
+//                    exp.close();
                     vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
                     SparseMat newMat(skeletonImg);
                     int SkeletonPointsCounter = newMat.nzcount();

@@ -32,6 +32,10 @@ SOFTWARE.
 #include <chrono>
 #include <fstream>
 #include <string>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -60,10 +64,11 @@ string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
+bool openDirectory = true;
 
 
 //Declaration globale values
-std::string imgfile, skeletonImgName;
+std::string imgfile, skeletonImgName, dirName;
 bool output = false;
 double epsilon;
 bool variableOutputNames;
@@ -159,11 +164,34 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 int main(int argc, char **argv) {
     system("exec rm -r ../output/*");
     inputValuesRead(argc, argv);
+    DIR *dir;
+    struct dirent *ent;
     if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
-    Mat outClosing = simpleReadAndConvertBW();
 
+    if ( openDirectory == true) {
+        if ((dir = opendir("../ressources")) != NULL) {
+            while ((ent = readdir(dir))) {
+                sleep(1);
+                dirName = ent->d_name;
+                int test = 1;
+                if (dirName != "." && dirName != ".." && dirName != ".git") {
+                    int filenameLength = dirName.length();
+                    string imgDirectory  = "../ressources/";
+                    imgfile = imgDirectory + dirName;
+                    Mat outClosing = simpleReadAndConvertBW();
+                    //closedir(dir);
+                }
+            }
+            closedir(dir);
+        } else {
+            perror("");
+            return EXIT_FAILURE;
+        }
+    }else {
+        Mat outClosing = simpleReadAndConvertBW();
+    }
     //exit program
     return 0;
 }
@@ -545,8 +573,8 @@ void splitContours(Mat src) {
 
                     generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
 
-                    auto boundaryPointList = getListFromPicture(boundaryImg);
-                    writeCSVData(boundaryPointList, "-boundaryData.csv", indx);
+                    //auto boundaryPointList = getListFromPicture(boundaryImg);
+                    //writeCSVData(boundaryPointList, "-boundaryData.csv", indx);
 
 
                     vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);

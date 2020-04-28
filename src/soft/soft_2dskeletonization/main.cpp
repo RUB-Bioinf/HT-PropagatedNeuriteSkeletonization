@@ -58,7 +58,7 @@ using namespace std;
 using namespace cv;
 //TODO delete
 //Declaration default values
-string inputImgDefault = "RK5_20200104_SHSY5Y_R_5000_01_Alexa488_01.png";
+string inputImgDefault = "RK5_20200104_SHSY5Y_R_2500_03_Alexa488_02.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
 double epsilonValueDefault = 10.0;
@@ -517,7 +517,7 @@ void splitContours(Mat src) {
         for (int i = 0; i <= contours.size(); i++) {
             if (hierarchy[i][3] == -1) {
                 double area = contourArea(contours[i]);
-                if (indx != 100000 && !(area <=100)) {
+                if (indx != 100000 && !(area <=200)) {
                     Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
                     Scalar color(rand() & 255, rand() & 255, rand() & 255);
                     drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);

@@ -560,75 +560,48 @@ void splitContours(Mat src) {
                             new shape::DiscreteShape<2>(dissh->getWidth(), dissh->getHeight()));
                     algorithm::skinning::Filling(shppropag, grskelpropag);
 
-
-                    Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
-                    //generateCompleteImage(imagepropag, dissh, disbnd, shppropag, grskelpropag, indx);
-                    generateCompleteImage(completeIMG, dissh, disbnd, shppropag, grskelpropag, 0);
-
                     Mat skelImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
                     //Mat skeletonImg = generateSkeletonImage(skelImg, dissh, grskelpropag, indx);
                     generateSkeletonImage(completeSkeleton, dissh, grskelpropag, 0);
-
-                    Mat boundImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
-                    //Mat boundaryImg = generateBoundaryImage(boundImg, dissh, disbnd, indx);
-
-                    generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
-
-                    //auto boundaryPointList = getListFromPicture(boundaryImg);
-                    //writeCSVData(boundaryPointList, "-boundaryData.csv", indx);
-
-
-                    //vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
-//                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist2;
-//                    for (auto& t : contractlist){
-//                        auto f = t.first;
-//                        if((std::find(skelPointsList.begin(), skelPointsList.end(), f) != skelPointsList.end())){
-//                            contractlist2.insert({f, t.second});
-//                        }else{
-//                           // std::cout << "found: " << f.first << "|" << f.second << std::endl;
-//                        }
-//                    }
-//                    ofstream exp;
-//                    exp.open("../output/contractSet.csv");
-//
-//                    for(auto& t : contractlist2){
-//                        auto first = t.first;
-//                        auto list = t.second;
-//                        bool first1 = true;
-//                        exp << "(" << first.first << ", " << first.second << ");";
-//                        for(auto& list2 : list) {
-//                            for(auto& e : list2) {
-//                                exp << "(" << e.first << ", " << e.second << ")";
-//                            }
-//                            exp << ";";
-//                        }
-//                        exp << std::endl;
-//
-//                    }
-//                    exp.flush();
-//                    exp.close();
-                    //vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
                     SparseMat newMat(completeSkeleton);
                     int SkeletonPointsCounter = newMat.nzcount();
                     //writeCSVData(skelPointsList, "-skeletonData.csv", indx);
                     //consoleOutputSingleData(respropag, t0, SkeletonPointsCounter);
+                    if (SkeletonPointsCounter != 0){
+                        Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
+                        //generateCompleteImage(imagepropag, dissh, disbnd, shppropag, grskelpropag, indx);
+                        generateCompleteImage(completeIMG, dissh, disbnd, shppropag, grskelpropag, 0);
 
-                    nodeList.push_back(get<2>(respropag));
-                    branchList.push_back(get<3>(respropag));
-                    distanceList.push_back(get<1>(respropag));
-                    timeList.push_back(t0);
-                    skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
-                    //check if file not exists and creates one with headlines
-                    ifstream file(resultFilename);
-                    if(!file.good()){
-                        ofstream csvFile(resultFilename);
-                        csvFile << "Dateiname , Anzahl Nodes , Anzahl Branches , Hausdorff Distance (px), Berechnungszeit (ms), Skelettpunkte \n";
-                        csvFile.close();
+                        Mat boundImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
+                        //Mat boundaryImg = generateBoundaryImage(boundImg, dissh, disbnd, indx);
+
+                        generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
+
+                        //auto boundaryPointList = getListFromPicture(boundaryImg);
+                        //writeCSVData(boundaryPointList, "-boundaryData.csv", indx);
+
+
+                        //vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
+                        //vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
+
+                        nodeList.push_back(get<2>(respropag));
+                        branchList.push_back(get<3>(respropag));
+                        distanceList.push_back(get<1>(respropag));
+                        timeList.push_back(t0);
+                        skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
+                        //check if file not exists and creates one with headlines
+                        ifstream file(resultFilename);
+                        if(!file.good()){
+                            ofstream csvFile(resultFilename);
+                            csvFile << "Dateiname , Anzahl Nodes , Anzahl Branches , Hausdorff Distance (px), Berechnungszeit (ms), Skelettpunkte \n";
+                            csvFile.close();
+
+                        }
+                        writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
+                                           resultFilename);
+                        indx++;
 
                     }
-                    writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
-                                       resultFilename);
-                    indx++;
                 }
             }
         }

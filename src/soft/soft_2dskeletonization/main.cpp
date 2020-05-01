@@ -468,7 +468,7 @@ void splitContours(Mat src) {
 //    morphologyEx(bw, bw, MORPH_CLOSE, element);
 
     //imwrite("Binary_image.png", bw);
-    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
+    //resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
     Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
     morphologyEx(bw, bw, MORPH_CLOSE, element);
     imwrite("../output/Mopho_Output.png", bw);

@@ -61,6 +61,7 @@ using namespace cv;
 string inputImgDefault = "RK5_20200104_SHSY5Y_R_2500_03_Alexa488_02.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
+string resultFilename = "../output/resultData.csv";
 double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
@@ -561,15 +562,15 @@ void splitContours(Mat src) {
 
 
                     Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
-                    generateCompleteImage(imagepropag, dissh, disbnd, shppropag, grskelpropag, indx);
+                    //generateCompleteImage(imagepropag, dissh, disbnd, shppropag, grskelpropag, indx);
                     generateCompleteImage(completeIMG, dissh, disbnd, shppropag, grskelpropag, 0);
 
                     Mat skelImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
-                    Mat skeletonImg = generateSkeletonImage(skelImg, dissh, grskelpropag, indx);
+                    //Mat skeletonImg = generateSkeletonImage(skelImg, dissh, grskelpropag, indx);
                     generateSkeletonImage(completeSkeleton, dissh, grskelpropag, 0);
 
                     Mat boundImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
-                    Mat boundaryImg = generateBoundaryImage(boundImg, dissh, disbnd, indx);
+                    //Mat boundaryImg = generateBoundaryImage(boundImg, dissh, disbnd, indx);
 
                     generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
 
@@ -577,7 +578,7 @@ void splitContours(Mat src) {
                     //writeCSVData(boundaryPointList, "-boundaryData.csv", indx);
 
 
-                    vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
+                    //vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
 //                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist2;
 //                    for (auto& t : contractlist){
 //                        auto f = t.first;
@@ -606,10 +607,10 @@ void splitContours(Mat src) {
 //                    }
 //                    exp.flush();
 //                    exp.close();
-                    vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
-                    SparseMat newMat(skeletonImg);
+                    //vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
+                    SparseMat newMat(completeSkeleton);
                     int SkeletonPointsCounter = newMat.nzcount();
-                    writeCSVData(skelPointsList, "-skeletonData.csv", indx);
+                    //writeCSVData(skelPointsList, "-skeletonData.csv", indx);
                     //consoleOutputSingleData(respropag, t0, SkeletonPointsCounter);
 
                     nodeList.push_back(get<2>(respropag));
@@ -617,8 +618,16 @@ void splitContours(Mat src) {
                     distanceList.push_back(get<1>(respropag));
                     timeList.push_back(t0);
                     skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
+                    //check if file not exists and creates one with headlines
+                    ifstream file(resultFilename);
+                    if(!file.good()){
+                        ofstream csvFile(resultFilename);
+                        csvFile << "Dateiname , Anzahl Nodes , Anzahl Branches , Hausdorff Distance (px), Berechnungszeit (ms), Skelettpunkte \n";
+                        csvFile.close();
+
+                    }
                     writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
-                                       "-skeletonData.csv");
+                                       resultFilename);
                     indx++;
                 }
             }
@@ -636,21 +645,36 @@ void splitContours(Mat src) {
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, string filenameSuffix) {
-    string csvFilename = setVariableFilenames(filenameSuffix, 0);
-    ofstream csvFile(csvFilename);
-    csvFile << "Anzahl Nodes , Anzahl Branches , Hausdorff Distance (px), Berechnungszeit (ms), Skelettpunkte \n";
-    list<int>::iterator it1 = nodeList.begin();
-    list<int>::iterator it2 = branchList.begin();
-    list<double>::iterator it3 = distanceList.begin();
-    list<int>::iterator it4 = timeList.begin();
-    list<int>::iterator it5 = skeletonPointSingleCountList.begin();
+    list<int>::iterator itNodes = nodeList.begin();
+    list<int>::iterator itBranches = branchList.begin();
+    list<double>::iterator itDistances = distanceList.begin();
+    list<int>::iterator itTimes = timeList.begin();
+    list<int>::iterator itSkeletonPoints = skeletonPointSingleCountList.begin();
+
+    int sumNodes = 0;
+    int sumBranches = 0;
+    double sumDistances = 0;
+    int sumTimes = 0;
+    int sumSkelPoints = 0;
+
     if (nodeList.size() == branchList.size() && branchList.size() == distanceList.size() && distanceList.size() ==
                                                                                             timeList.size() &&
         timeList.size() == skeletonPointSingleCountList.size()) {
-        for (; it1 != nodeList.end() && it2 != branchList.end() && it3 != distanceList.end() && it4 != timeList.end() &&
-               it5 != skeletonPointSingleCountList.end(); it1++, it2++, it3++, it4++, it5++) {
-            csvFile << *it1 << "," << *it2 << "," << *it3 << "," << *it4 << "," << *it5 << "\n";
+        for (; itNodes != nodeList.end() && itBranches != branchList.end() && itDistances != distanceList.end() && itTimes != timeList.end() &&
+               itSkeletonPoints != skeletonPointSingleCountList.end(); itNodes++, itBranches++, itDistances++, itTimes++, itSkeletonPoints++) {
+            sumNodes = sumNodes + *itNodes;
+            sumBranches = sumBranches + *itBranches;
+            sumDistances = sumDistances + *itDistances;
+            sumTimes = sumTimes +  *itTimes;
+            sumSkelPoints = sumSkelPoints + *itSkeletonPoints;
+            //csvFile << *itNodes << "," << *itBranches << "," << *itDistances << "," << *itTimes << "," << *itSkeletonPoints << "\n";
         }
     }
+    double avgDistances = sumDistances / distanceList.size();
+    string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
+
+    //Write data in file
+    ofstream csvFile(filenameSuffix, ios::app);
+    csvFile << inputFilename << "," << sumNodes << "," << sumBranches << "," << avgDistances << "," << sumTimes << "," << sumSkelPoints << "\n";
     csvFile.close();
 }

@@ -36,6 +36,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <filesystem>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -56,7 +57,7 @@ SOFTWARE.
 
 using namespace std;
 using namespace cv;
-//TODO delete
+
 //Declaration default values
 string inputImgDefault = "RK5_20200104_SHSY5Y_R_2500_03_Alexa488_02.png";
 string skeletonImgNameDefault = "skeleton.png";
@@ -69,11 +70,19 @@ bool openDirectory = true;
 
 
 //Declaration globale values
-std::string imgfile, skeletonImgName, dirName;
+std::string imgfile, skeletonImgName;
 bool output = false;
 double epsilon;
 bool variableOutputNames;
 
+/**
+ *
+ * @param directoryName Name of the directory to grab at
+ * @return Error numbers for failure
+ */
+int inputFolderGrabbing(const char *directoryName);
+
+void preprocessingImageJ(string fileName);
 
 Mat simpleReadAndConvertBW();
 
@@ -142,13 +151,6 @@ Mat
 generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i);
 
 /**
- * Generates a list with a pair of x and y coordinates of all skeleton point
- * @param img image with only the skeleton points
- * @return List with x and y coordinate pairs
- */
-vector<pair<int, int>> getAllImageCoordinates(Mat img);
-
-/**
  * Writes the data from the given list into csv data
  * @param skeletonPoints list of x and y coordinates for the skeleton data
  * @param filenameSuffix String for the filename suffix
@@ -163,26 +165,70 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
 
 int main(int argc, char **argv) {
-    system("exec rm -r ../output/*");
+    //system("exec rm -r ../output/*");
     inputValuesRead(argc, argv);
     DIR *dir;
     struct dirent *ent;
+    string dirName;
+
     if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
+    int test = inputFolderGrabbing("../ressources");
+    cout << "fertig" <<endl;
+//    if ( openDirectory == true) {
+//        if ((dir = opendir("../ressources")) != NULL) {
+//            while ((ent = readdir(dir))) {
+//                dirName = ent->d_name;
+//                int test = 1;
+//                if (dirName != "." && dirName != ".." && dirName != ".git") {
+//                    if (dirName.find(".") != string::npos){
+//                        int filenameLength = dirName.length();
+//                        string imgDirectory  = "../ressources/";
+//                        imgfile = imgDirectory + dirName;
+//                        Mat outClosing = simpleReadAndConvertBW();
+//                    }
+//                }
+//            }
+//            closedir(dir);
+//        } else {
+//            perror("");
+//            return EXIT_FAILURE;
+//        }
+//    }else {
+//        Mat outClosing = simpleReadAndConvertBW();
+//    }
+    //exit program
+    return 0;
+}
 
+int inputFolderGrabbing(const char *directoryName){
+    DIR *dir;
+    struct dirent *ent;
+    string dirName;
     if ( openDirectory == true) {
-        if ((dir = opendir("../ressources")) != NULL) {
+        if ((dir = opendir(directoryName)) != NULL) {
             while ((ent = readdir(dir))) {
-                sleep(1);
                 dirName = ent->d_name;
                 int test = 1;
                 if (dirName != "." && dirName != ".." && dirName != ".git") {
-                    int filenameLength = dirName.length();
-                    string imgDirectory  = "../ressources/";
-                    imgfile = imgDirectory + dirName;
-                    Mat outClosing = simpleReadAndConvertBW();
-                    //closedir(dir);
+
+                    if (dirName.find(".") != string::npos){
+                        cout << dirName << endl;
+                        imgfile = directoryName;
+                        imgfile.append("/" + dirName);
+                        Mat outClosing = simpleReadAndConvertBW();
+                    }
+                    else {
+                        cout << dirName << endl;
+                        string test = directoryName;
+                        test.append("/" + dirName);
+                        int n = test.length();
+                        char char_array[n+1];
+                        strcpy (char_array, test.c_str());
+                        const char *dirNeu = char_array;
+                        inputFolderGrabbing(dirNeu);
+                    }
                 }
             }
             closedir(dir);
@@ -195,6 +241,10 @@ int main(int argc, char **argv) {
     }
     //exit program
     return 0;
+}
+
+void preprocessingImageJ(string fileName){
+
 }
 
 vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int, int>> &list) {
@@ -237,27 +287,6 @@ vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int
         }
     }
     return list;
-}
-
-vector<pair<int, int>> getListFromPicture(Mat pic) {
-
-    int rows = pic.rows;
-    int cols = pic.cols;
-
-    cv::Size s = pic.size();
-    rows = s.height;
-    cols = s.width;
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            int x = pic.at<uchar>(i, j);
-            if (x != 0) {
-                vector<pair<int, int>> liste = vector<pair<int, int>>();
-                liste.emplace_back(i, j);
-                return getListFromPicture(pic, i, j, liste);
-            }
-        }
-    }
-    return vector<pair<int, int>>();
 }
 
 int inputValuesRead(int argc, char **argv) {
@@ -320,19 +349,6 @@ cv::Mat simpleReadAndConvertBW() {
         throw logic_error("Wrong input data...");
     }
     splitContours(shpimggray);
-    /*Mat shpimg;
-    threshold(shpimggray,shpimg,1,255,THRESH_BINARY);
-
-    string filename = setVariableFilenames("-ThresholdOutput.png");
-    imwrite(filename, shpimg);
-
-//     topological closure of the binary shape
-    Mat outClosing;
-    Mat element = getStructuringElement(MORPH_RECT,Size(3,3),Point(1,1));
-    morphologyEx(shpimg, outClosing, MORPH_CLOSE, element);
-    filename = setVariableFilenames("-ClosingOutput.png");
-    imwrite(filename, outClosing);*/
-
     return shpimggray;
 }
 
@@ -410,8 +426,8 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
     return inputImage;
 }
 
-Mat
-generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i) {
+Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd,
+        int i) {
     displayopencv::DisplayDiscreteBoundary(disbnd, image, dissh->getFrame(),
                                            cv::Scalar(255, 255, 255));
     string filename = setVariableFilenames("-BoundaryImg.png", i);
@@ -433,17 +449,6 @@ vector<pair<int, int>> getAllImageCoordinates(Mat img) {
     }
     return coordinateList;
 }
-
-void writeCSVData(vector<pair<int, int>> skeletonPoints, string filenameSuffix, int i) {
-    string csvFilename = setVariableFilenames(filenameSuffix, i);
-    ofstream csvFile(csvFilename);
-    for (pair<int, int> p : skeletonPoints) {
-        csvFile << p.first << ", " << p.second << "\n";
-    }
-    csvFile.close();
-}
-
-
 
 void splitContours(Mat src) {
     Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
@@ -489,17 +494,6 @@ void splitContours(Mat src) {
     Mat test = Mat::zeros(dist_8u.size(), CV_8UC3);
     std::string str;
 
-//    for(size_t i = 0; i< contours.size(); i++){
-//        Scalar color (rand()&255, rand()&255, rand()&255);
-//        drawContours(test, contours, (int) i, color, LINE_4, 8, hierarchy);
-//        std::string str = std::to_string(i);
-//        string filenameTest = "test";
-//        filenameTest.append(str);
-//        filenameTest.append(".png");
-//        imwrite(filenameTest , test );
-//    }
-//    imwrite("complete.png", test);
-
     //Only get the contours on the first layer (foreground contours)
     if (!contours.empty() && !hierarchy.empty()) {
         Mat completeContour = Mat::zeros(dist_8u.size(), CV_8UC3);
@@ -527,13 +521,6 @@ void splitContours(Mat src) {
 
                     threshold(singleContour, singleContour, 1, 255, THRESH_BINARY);
                     cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
-//                    imwrite("../output/AfterThreshold.png", singleContour);
-//
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
-//                    morphologyEx(singleContour, singleContour, MORPH_CLOSE, element);
-                    //morphologyEx(singleContour, singleContour, MORPH_DILATE, element);
                     imwrite("../output/Mopho_Output.png", singleContour);
 
                     shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(
@@ -577,33 +564,27 @@ void splitContours(Mat src) {
 
                         generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
 
-                        //auto boundaryPointList = getListFromPicture(boundaryImg);
-                        //writeCSVData(boundaryPointList, "-boundaryData.csv", indx);
-
-
-                        //vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
-                        //vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
-
                         nodeList.push_back(get<2>(respropag));
                         branchList.push_back(get<3>(respropag));
                         distanceList.push_back(get<1>(respropag));
                         timeList.push_back(t0);
                         skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
-                        //check if file not exists and creates one with headlines
-                        ifstream file(resultFilename);
-                        if(!file.good()){
-                            ofstream csvFile(resultFilename);
-                            csvFile << "Dateiname , Anzahl Nodes , Anzahl Branches , Hausdorff Distance (px), Berechnungszeit (ms), Skelettpunkte \n";
-                            csvFile.close();
-
-                        }
-                        writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
-                                           resultFilename);
                         indx++;
 
                     }
                 }
             }
+        }
+        ifstream file(resultFilename);
+        //check if file not exists and creates one with headlines
+        if(!file.good()){
+            ofstream csvFile(resultFilename);
+            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte \n";
+            csvFile.close();
+
+        }else{
+            writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
+                               resultFilename);
         }
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();
@@ -612,7 +593,6 @@ void splitContours(Mat src) {
     } else {
         throw logic_error("No contours found...");
     }
-
     findContours(dist_8u, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 }
 
@@ -648,6 +628,6 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
-    csvFile << inputFilename << "," << sumNodes << "," << sumBranches << "," << avgDistances << "," << sumTimes << "," << sumSkelPoints << "\n";
+    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints << "\n";
     csvFile.close();
 }

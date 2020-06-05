@@ -29,6 +29,7 @@ SOFTWARE.
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <iomanip>
+#include <ctime>
 #include <chrono>
 #include <fstream>
 #include <string>
@@ -37,6 +38,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <dirent.h>
 #include <filesystem>
+#include <iostream>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -70,7 +72,7 @@ bool openDirectory = true;
 
 
 //Declaration globale values
-std::string imgfile, skeletonImgName;
+std::string imgfile, skeletonImgName, prefix;
 bool output = false;
 double epsilon;
 bool variableOutputNames;
@@ -81,8 +83,6 @@ bool variableOutputNames;
  * @return Error numbers for failure
  */
 int inputFolderGrabbing(const char *directoryName);
-
-void preprocessingImageJ(string fileName);
 
 Mat simpleReadAndConvertBW();
 
@@ -103,14 +103,6 @@ string setVariableFilenames(string filenameSuffix, int i);
 tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
                                          const boundary::DiscreteBoundary<2>::Ptr disbnd,
                                          const skeleton::GraphSkel2d::Ptr skel);
-
-/**
- * Generates a beautiful console Output
- * @param respropag Tupel with data
- * @param t0 Working time of the algorithm
- * @param skeletonPointsCounter Counter for all skeleton points
- */
-void consoleOutputSingleData(tuple<double, double, int, int> respropag, int t0, int skeletonPointsCounter);
 
 /**
  * Print the Skeleton Counter for the hole Image
@@ -150,22 +142,22 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
 Mat
 generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i);
 
-/**
- * Writes the data from the given list into csv data
- * @param skeletonPoints list of x and y coordinates for the skeleton data
- * @param filenameSuffix String for the filename suffix
- */
-void writeCSVData(vector<pair<int, int>> skeletonPoints, string filenameSuffix, int i);
-
 void splitContours(Mat src);
-
-vector<pair<int, int>> getListFromPicture(Mat pic);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
 
 int main(int argc, char **argv) {
     //system("exec rm -r ../output/*");
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
+    auto str = oss.str();
+    prefix = str;
+    system("../test.sh");
+    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test2.ijm ../ressources/");
     inputValuesRead(argc, argv);
     DIR *dir;
     struct dirent *ent;
@@ -176,29 +168,6 @@ int main(int argc, char **argv) {
     }
     int test = inputFolderGrabbing("../ressources");
     cout << "fertig" <<endl;
-//    if ( openDirectory == true) {
-//        if ((dir = opendir("../ressources")) != NULL) {
-//            while ((ent = readdir(dir))) {
-//                dirName = ent->d_name;
-//                int test = 1;
-//                if (dirName != "." && dirName != ".." && dirName != ".git") {
-//                    if (dirName.find(".") != string::npos){
-//                        int filenameLength = dirName.length();
-//                        string imgDirectory  = "../ressources/";
-//                        imgfile = imgDirectory + dirName;
-//                        Mat outClosing = simpleReadAndConvertBW();
-//                    }
-//                }
-//            }
-//            closedir(dir);
-//        } else {
-//            perror("");
-//            return EXIT_FAILURE;
-//        }
-//    }else {
-//        Mat outClosing = simpleReadAndConvertBW();
-//    }
-    //exit program
     return 0;
 }
 
@@ -212,15 +181,22 @@ int inputFolderGrabbing(const char *directoryName){
                 dirName = ent->d_name;
                 int test = 1;
                 if (dirName != "." && dirName != ".." && dirName != ".git") {
-
-                    if (dirName.find(".") != string::npos){
-                        cout << dirName << endl;
+                    //picture data found
+                    if (dirName.find(".png") != string::npos){
+//                        cout << dirName << endl;
                         imgfile = directoryName;
                         imgfile.append("/" + dirName);
                         Mat outClosing = simpleReadAndConvertBW();
                     }
+                    else if (dirName.find(".tif") != string::npos)
+                    {
+                        //tue nichts
+//                        cout << dirName << endl;
+//                        cout << "tue nichts" << endl;
+                    }
+                    //directory found
                     else {
-                        cout << dirName << endl;
+                        //cout << dirName << endl;
                         string test = directoryName;
                         test.append("/" + dirName);
                         int n = test.length();
@@ -330,13 +306,17 @@ string setVariableFilenames(string filenameSuffix, int i) {
     string filename = first.substr(0, filenameLength - 4);
 
     string generatedFilename;
+
+
+
+
     if (i == 0) {
-        generatedFilename = "../output/" + filename + filenameSuffix;
+        generatedFilename = "../output/" + prefix + "/" + filename + filenameSuffix;
     } else {
         stringstream ss;
         ss << i;
         string str = ss.str();
-        filename = "../output/" + filename + "_" + str;
+        filename = "../output/" + prefix + "/" + filename + "_" + str;
         generatedFilename = filename + filenameSuffix;
     }
     return generatedFilename;

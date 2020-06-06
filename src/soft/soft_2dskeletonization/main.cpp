@@ -79,12 +79,23 @@ bool variableOutputNames;
 
 /**
  *
+ * @param str src Alexa file
+ * @return Name for associated DAPI file
+ */
+string replaceSubstring(string str);
+
+/**
+ *
  * @param directoryName Name of the directory to grab at
  * @return Error numbers for failure
  */
 int inputFolderGrabbing(const char *directoryName);
 
-Mat simpleReadAndConvertBW();
+/**
+ *
+ * @return
+ */
+Mat simpleRead();
 
 /**
  * Reads the command line parameters and input it to globale params
@@ -100,6 +111,13 @@ int inputValuesRead(int argc, char **argv);
  */
 string setVariableFilenames(string filenameSuffix, int i);
 
+/**
+ *
+ * @param dissh
+ * @param disbnd
+ * @param skel
+ * @return
+ */
 tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
                                          const boundary::DiscreteBoundary<2>::Ptr disbnd,
                                          const skeleton::GraphSkel2d::Ptr skel);
@@ -142,7 +160,12 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
 Mat
 generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i);
 
-void splitContours(Mat src);
+/**
+ *
+ * @param srcAlexa
+ * @param srcDapi
+ */
+void splitContours(Mat srcAlexa, Mat srcDapi);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
@@ -159,16 +182,29 @@ int main(int argc, char **argv) {
     system("../test.sh");
     system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test2.ijm ../ressources/");
     inputValuesRead(argc, argv);
-    DIR *dir;
-    struct dirent *ent;
-    string dirName;
 
     if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
     int test = inputFolderGrabbing("../ressources");
     cout << "fertig" <<endl;
-    return 0;
+    return test;
+}
+
+string replaceSubstring(string str){
+    size_t index = 0;
+    while (true) {
+        /* Locate the substring to replace. */
+        index = str.find("Alexa", index);
+        if (index == std::string::npos) break;
+
+        /* Make the replacement. */
+        str.replace(index, 8, "DAPI");
+
+        /* Advance index forward so the next iteration doesn't pick it up as well. */
+        index += 3;
+    }
+    return str;
 }
 
 int inputFolderGrabbing(const char *directoryName){
@@ -186,7 +222,7 @@ int inputFolderGrabbing(const char *directoryName){
 //                        cout << dirName << endl;
                         imgfile = directoryName;
                         imgfile.append("/" + dirName);
-                        Mat outClosing = simpleReadAndConvertBW();
+                        Mat outClosing = simpleRead();
                     }
                     else if (dirName.find(".tif") != string::npos)
                     {
@@ -213,56 +249,10 @@ int inputFolderGrabbing(const char *directoryName){
             return EXIT_FAILURE;
         }
     }else {
-        Mat outClosing = simpleReadAndConvertBW();
+        Mat outClosing = simpleRead();
     }
     //exit program
     return 0;
-}
-
-void preprocessingImageJ(string fileName){
-
-}
-
-vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int, int>> &list) {
-    cv::Size s = pic.size();
-
-    if (pic.at<uchar>(i + 1, j) != 0) {
-        pair<int, int> pair = make_pair(i + 1, j);
-        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
-            return el.first == pair.first && el.second == pair.second;
-        }) == list.end())) {
-            list.push_back(pair);
-            return getListFromPicture(pic, i + 1, j, list);
-        }
-    }
-    if (pic.at<uchar>(i, j + 1) != 0) {
-        pair<int, int> pair = make_pair(i, j + 1);
-        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
-            return el.first == pair.first && el.second == pair.second;
-        }) == list.end())) {
-            list.push_back(pair);
-            return getListFromPicture(pic, i, j + 1, list);
-        }
-    }
-    if (pic.at<uchar>(i - 1, j) != 0) {
-        pair<int, int> pair = make_pair(i - 1, j);
-        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
-            return el.first == pair.first && el.second == pair.second;
-        }) == list.end())) {
-            list.push_back(pair);
-            return getListFromPicture(pic, i - 1, j, list);
-        }
-    }
-    if (pic.at<uchar>(i, j - 1) != 0) {
-        pair<int, int> pair = make_pair(i, j - 1);
-        if ((std::find_if(list.begin(), list.end(), [&pair](const std::pair<int, int> &el) {
-            return el.first == pair.first && el.second == pair.second;
-        }) == list.end())) {
-            list.push_back(pair);
-            return getListFromPicture(pic, i, j - 1, list);
-        }
-    }
-    return list;
 }
 
 int inputValuesRead(int argc, char **argv) {
@@ -307,9 +297,6 @@ string setVariableFilenames(string filenameSuffix, int i) {
 
     string generatedFilename;
 
-
-
-
     if (i == 0) {
         generatedFilename = "../output/" + prefix + "/" + filename + filenameSuffix;
     } else {
@@ -322,14 +309,18 @@ string setVariableFilenames(string filenameSuffix, int i) {
     return generatedFilename;
 }
 
-cv::Mat simpleReadAndConvertBW() {
-    Mat shpimggray = imread(imgfile);
-    //cout << shpimggray << endl;
-    if (shpimggray.empty()) {
-        throw logic_error("Wrong input data...");
+cv::Mat simpleRead() {
+    Mat matAlexaFile = imread(imgfile);
+    if (matAlexaFile.empty()) {
+        throw logic_error("Wrong input data Alexa file...");
     }
-    splitContours(shpimggray);
-    return shpimggray;
+    string dapiFile = replaceSubstring(imgfile);
+    Mat matDapiFile = imread(dapiFile);
+    if (matDapiFile.empty()) {
+        throw logic_error("Wrong input data DAPI file...");
+    }
+    splitContours(matAlexaFile, matDapiFile);
+    return matAlexaFile;
 }
 
 tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr dissh,
@@ -353,20 +344,6 @@ tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr diss
     tuple<double, double, int, int> result = std::make_tuple(res * 100.0, res2, skel->getNbNodes(), nbbr);
 
     return result;
-}
-
-void consoleOutputSingleData(tuple<double, double, int, int> respropag, int t0, int skeletonPointsCounter) {
-    double A0 = get<0>(respropag); // sym area diff
-    double H0 = get<1>(respropag); // Hausdorff dist
-    int N0 = get<2>(respropag); // nb nodes
-    int B0 = get<3>(respropag); // nb branches
-
-    cout << "Skeleton estmated in " << t0 << "ms." << endl;
-    cout << "Symetric difference area over reference area: " << A0 << "\%" << endl;
-    cout << "Hausdorff distance to reference: " << H0 << "px (epsilon=" << epsilon << "px)" << endl;
-    cout << "Number of branches: " << B0 << endl;
-    cout << "Number of nodes: " << N0 << endl;
-    cout << "Number of skeleton points: " << skeletonPointsCounter << endl;
 }
 
 void consoleOutputCompleteData(int skeletonPointsCounter) {
@@ -430,12 +407,12 @@ vector<pair<int, int>> getAllImageCoordinates(Mat img) {
     return coordinateList;
 }
 
-void splitContours(Mat src) {
+void splitContours(Mat srcAlexa, Mat srcDapi) {
     Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
     Mat imgLaplacian;
-    filter2D(src, imgLaplacian, CV_32F, kernel);
+    filter2D(srcAlexa, imgLaplacian, CV_32F, kernel);
     Mat sharp;
-    src.convertTo(sharp, CV_32F);
+    srcAlexa.convertTo(sharp, CV_32F);
     Mat imgResult = sharp - imgLaplacian;
 
     //convert 8B to greyscale

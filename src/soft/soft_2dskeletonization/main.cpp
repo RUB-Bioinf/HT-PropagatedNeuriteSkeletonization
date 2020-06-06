@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
     auto tm = *std::localtime(&t);
 
     std::ostringstream oss;
-    oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
+    oss << std::put_time(&tm, "%d-%m-%Y");
     auto str = oss.str();
     prefix = str;
     system("../test.sh");

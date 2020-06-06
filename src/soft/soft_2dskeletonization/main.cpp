@@ -64,7 +64,6 @@ using namespace cv;
 string inputImgDefault = "RK5_20200104_SHSY5Y_R_2500_03_Alexa488_02.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
-string resultFilename = "../output/resultData.csv";
 double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
@@ -72,7 +71,7 @@ bool openDirectory = true;
 
 
 //Declaration globale values
-std::string imgfile, skeletonImgName, prefix;
+std::string imgfile, skeletonImgName, prefix, resultFilename;
 bool output = false;
 double epsilon;
 bool variableOutputNames;
@@ -137,11 +136,11 @@ Mat distanceTransformAlexa(Mat srcAlexa);
 
 /**
  *
- * @param srcAlexa
+ * @param srcSkeleton
  * @param dist
  * @return
  */
-Mat substractDistFromAlexafile(Mat srcAlexa, Mat dist);
+Mat substractDistFromSkeletonfile(Mat srcSkeleton, Mat dist);
 
 /**
  * Generates the complete data image with shape, boundary, boundary differece and skelett
@@ -180,10 +179,10 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
  * @param srcAlexa
  * @param srcDapi
  */
-void splitContours(Mat srcAlexa, Mat srcDapi);
+void splitContours(Mat srcAlexa);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, string filenameSuffix);
+                        list<int> skeletonPointSingleCountList, int SkeletonPointsWithoutDistTrans, string filenameSuffix);
 
 int main(int argc, char **argv) {
     //system("exec rm -r ../output/*");
@@ -196,6 +195,7 @@ int main(int argc, char **argv) {
     prefix = str;
     system("../test.sh");
     system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test2.ijm ../ressources/");
+    resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 
     if (variableOutputNames) {
@@ -329,14 +329,12 @@ cv::Mat simpleRead() {
     if (matAlexaFile.empty()) {
         throw logic_error("Wrong input data Alexa file...");
     }
-    string dapiFile = replaceSubstring(imgfile);
-    Mat matDapiFile = imread(dapiFile);
-    if (matDapiFile.empty()) {
-        throw logic_error("Wrong input data DAPI file...");
-    }
-    Mat dist = distanceTransformAlexa(matAlexaFile);
-    Mat sub = substractDistFromAlexafile(matAlexaFile, dist);
-    splitContours(matAlexaFile, matDapiFile);
+//    string dapiFile = replaceSubstring(imgfile);
+//    Mat matDapiFile = imread(dapiFile);
+//    if (matDapiFile.empty()) {
+//        throw logic_error("Wrong input data DAPI file...");
+//    }
+    splitContours(matAlexaFile);
     return matAlexaFile;
 }
 
@@ -381,7 +379,7 @@ Mat generateCompleteImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     displayopencv::DisplayGraphSkeleton(grskelpropag, image, dissh->getFrame(),
                                         cv::Scalar(255, 0, 0));
 
-    if (output && i == 0 || i != 859) {
+    if (output && i == 0) {
         string filename = setVariableFilenames("-skeleton.png", i);
         imwrite(filename, image);
     }
@@ -394,7 +392,7 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
     displayopencv::DisplayGraphSkeleton(grskelpropag, inputImage, dissh->getFrame(),
                                         cv::Scalar(255, 255, 255));
     string filename = setVariableFilenames("-SkeletonImg.png", i);
-    if (i == 0 || i != 859) {
+    if (i == 0) {
         imwrite(filename, inputImage);
     }
     return inputImage;
@@ -405,7 +403,7 @@ Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     displayopencv::DisplayDiscreteBoundary(disbnd, image, dissh->getFrame(),
                                            cv::Scalar(255, 255, 255));
     string filename = setVariableFilenames("-BoundaryImg.png", i);
-    if (i == 0 || i != 859) {
+    if (i == 0) {
         imwrite(filename, image);
     }
     return image;
@@ -425,29 +423,27 @@ vector<pair<int, int>> getAllImageCoordinates(Mat img) {
 }
 
 Mat distanceTransformAlexa(Mat srcAlexa){
-    Mat bin, dist;
-    cvtColor(srcAlexa, bin, COLOR_BGR2GRAY);
-    threshold(bin, bin, 1, 255, THRESH_BINARY | THRESH_OTSU);
-    distanceTransform(bin, dist, DIST_C, 3);
+    Mat dist;
+    distanceTransform(srcAlexa, dist, DIST_C, 3);
     normalize(dist, dist, 0, 1.0, NORM_MINMAX);
     threshold(dist, dist, 0.4, 255, THRESH_BINARY);
     Mat kernel1 = Mat::ones(3, 3, CV_8U);
     dilate(dist, dist, kernel1);
-    imwrite("ThresholdAlexa.png", bin);
+    dist.convertTo(dist, CV_8U);
     imwrite("DistanceTransform.png", dist);
     return dist;
 }
 
-Mat substractDistFromAlexafile(Mat srcAlexa, Mat dist){
-    Mat result, bin;
-    cvtColor(srcAlexa, bin, COLOR_BGR2GRAY);
-    threshold(bin, bin, 1, 255, THRESH_BINARY | THRESH_OTSU);
-    cv::subtract(bin, dist, result);
+Mat substractDistFromSkeletonfile(Mat srcSkeleton, Mat dist){
+    Mat result;
+    auto type1 = srcSkeleton.type();
+    auto type2 = dist.type();
+    cv::subtract(srcSkeleton, dist, result);
     imwrite("Substract.png", result);
     return result;
 }
 
-void splitContours(Mat srcAlexa, Mat srcDapi) {
+void splitContours(Mat srcAlexa) {
     Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
     Mat imgLaplacian;
     filter2D(srcAlexa, imgLaplacian, CV_32F, kernel);
@@ -484,6 +480,7 @@ void splitContours(Mat srcAlexa, Mat srcDapi) {
     Mat dist_8u;
     bw.convertTo(dist_8u, CV_8U);
 
+    Mat dist = distanceTransformAlexa(bw);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     findContours(dist_8u, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
@@ -545,9 +542,9 @@ void splitContours(Mat srcAlexa, Mat srcDapi) {
                     algorithm::skinning::Filling(shppropag, grskelpropag);
 
                     Mat skelImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
-                    //Mat skeletonImg = generateSkeletonImage(skelImg, dissh, grskelpropag, indx);
+                    Mat skeletonImg = generateSkeletonImage(skelImg, dissh, grskelpropag, indx);
                     generateSkeletonImage(completeSkeleton, dissh, grskelpropag, 0);
-                    SparseMat newMat(completeSkeleton);
+                    SparseMat newMat(skeletonImg);
                     int SkeletonPointsCounter = newMat.nzcount();
                     //writeCSVData(skelPointsList, "-skeletonData.csv", indx);
                     //consoleOutputSingleData(respropag, t0, SkeletonPointsCounter);
@@ -576,17 +573,21 @@ void splitContours(Mat srcAlexa, Mat srcDapi) {
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte \n";
+            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte ; Skelettpunkte ohne DistanceTranform \n";
             csvFile.close();
-
-        }else{
-            writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
-                               resultFilename);
         }
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();
+        cvtColor(completeSkeleton, completeSkeleton, COLOR_BGR2GRAY);
+        threshold(completeSkeleton, completeSkeleton, 1, 255, THRESH_BINARY | THRESH_OTSU);
+        Mat result = substractDistFromSkeletonfile(completeSkeleton, dist);
+        SparseMat newMat2(result);
+        int SkeletonPointsCounterComplete2 = newMat2.nzcount();
         consoleOutputCompleteData(SkeletonPointsCounterComplete);
+        consoleOutputCompleteData(SkeletonPointsCounterComplete2);
         imwrite("completeContour.png", completeContour);
+        writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList, SkeletonPointsCounterComplete2,
+                           resultFilename);
     } else {
         throw logic_error("No contours found...");
     }
@@ -594,7 +595,7 @@ void splitContours(Mat srcAlexa, Mat srcDapi) {
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, string filenameSuffix) {
+                        list<int> skeletonPointSingleCountList, int skelPointsDistTrans, string filenameSuffix) {
     list<int>::iterator itNodes = nodeList.begin();
     list<int>::iterator itBranches = branchList.begin();
     list<double>::iterator itDistances = distanceList.begin();
@@ -625,6 +626,7 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
-    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints << "\n";
+    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints
+    << ";" << skelPointsDistTrans << "\n";
     csvFile.close();
 }

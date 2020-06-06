@@ -172,7 +172,8 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
  * @return the matrix of the boundary image, zero = background and 255 = foreground, simple black and white image
  */
 Mat
-generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, int i);
+generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, string filenameSuffix,
+        int i);
 
 /**
  *
@@ -398,11 +399,12 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
     return inputImage;
 }
 
-Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd,
+//"-BoundaryImg.png"
+Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, string filenameSuffix,
         int i) {
     displayopencv::DisplayDiscreteBoundary(disbnd, image, dissh->getFrame(),
                                            cv::Scalar(255, 255, 255));
-    string filename = setVariableFilenames("-BoundaryImg.png", i);
+    string filename = setVariableFilenames(filenameSuffix, i);
     if (i == 0) {
         imwrite(filename, image);
     }
@@ -556,7 +558,7 @@ void splitContours(Mat srcAlexa) {
                         Mat boundImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
                         //Mat boundaryImg = generateBoundaryImage(boundImg, dissh, disbnd, indx);
 
-                        generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
+                        generateBoundaryImage(completeBoundary, dissh, disbnd, "-BoundaryImg.png",  0);
 
                         nodeList.push_back(get<2>(respropag));
                         branchList.push_back(get<3>(respropag));
@@ -588,6 +590,10 @@ void splitContours(Mat srcAlexa) {
         imwrite("completeContour.png", completeContour);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList, SkeletonPointsCounterComplete2,
                            resultFilename);
+        Mat test;
+        cv::subtract(bw, result, test);
+        string filename = setVariableFilenames("-Complete.png", 0);
+        imwrite(filename, test);
     } else {
         throw logic_error("No contours found...");
     }

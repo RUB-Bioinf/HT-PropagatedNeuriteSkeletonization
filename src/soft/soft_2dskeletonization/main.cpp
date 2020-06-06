@@ -234,20 +234,14 @@ int inputFolderGrabbing(const char *directoryName){
                 int test = 1;
                 if (dirName != "." && dirName != ".." && dirName != ".git") {
                     //picture data found
-                    if (dirName.find(".png") != string::npos){
+                    if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
 //                        cout << dirName << endl;
                         imgfile = directoryName;
                         imgfile.append("/" + dirName);
                         Mat outClosing = simpleRead();
                     }
-                    else if (dirName.find(".tif") != string::npos)
+                    else if (dirName.find(".") == string::npos)
                     {
-                        //tue nichts
-//                        cout << dirName << endl;
-//                        cout << "tue nichts" << endl;
-                    }
-                    //directory found
-                    else {
                         //cout << dirName << endl;
                         string test = directoryName;
                         test.append("/" + dirName);
@@ -256,6 +250,10 @@ int inputFolderGrabbing(const char *directoryName){
                         strcpy (char_array, test.c_str());
                         const char *dirNeu = char_array;
                         inputFolderGrabbing(dirNeu);
+                    }
+                    //directory found
+                    else {
+                        //nothing
                     }
                 }
             }

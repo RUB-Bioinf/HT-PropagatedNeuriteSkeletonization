@@ -129,6 +129,21 @@ tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr diss
 void consoleOutputCompleteData(int skeletonPointsCounter);
 
 /**
+ *
+ * @param srcAlexa
+ * @return
+ */
+Mat distanceTransformAlexa(Mat srcAlexa);
+
+/**
+ *
+ * @param srcAlexa
+ * @param dist
+ * @return
+ */
+Mat substractDistFromAlexafile(Mat srcAlexa, Mat dist);
+
+/**
  * Generates the complete data image with shape, boundary, boundary differece and skelett
  * @param image output image
  * @param dissh shape
@@ -319,6 +334,8 @@ cv::Mat simpleRead() {
     if (matDapiFile.empty()) {
         throw logic_error("Wrong input data DAPI file...");
     }
+    Mat dist = distanceTransformAlexa(matAlexaFile);
+    Mat sub = substractDistFromAlexafile(matAlexaFile, dist);
     splitContours(matAlexaFile, matDapiFile);
     return matAlexaFile;
 }
@@ -405,6 +422,29 @@ vector<pair<int, int>> getAllImageCoordinates(Mat img) {
         }
     }
     return coordinateList;
+}
+
+Mat distanceTransformAlexa(Mat srcAlexa){
+    Mat bin, dist;
+    cvtColor(srcAlexa, bin, COLOR_BGR2GRAY);
+    threshold(bin, bin, 1, 255, THRESH_BINARY | THRESH_OTSU);
+    distanceTransform(bin, dist, DIST_C, 3);
+    normalize(dist, dist, 0, 1.0, NORM_MINMAX);
+    threshold(dist, dist, 0.4, 255, THRESH_BINARY);
+    Mat kernel1 = Mat::ones(3, 3, CV_8U);
+    dilate(dist, dist, kernel1);
+    imwrite("ThresholdAlexa.png", bin);
+    imwrite("DistanceTransform.png", dist);
+    return dist;
+}
+
+Mat substractDistFromAlexafile(Mat srcAlexa, Mat dist){
+    Mat result, bin;
+    cvtColor(srcAlexa, bin, COLOR_BGR2GRAY);
+    threshold(bin, bin, 1, 255, THRESH_BINARY | THRESH_OTSU);
+    cv::subtract(bin, dist, result);
+    imwrite("Substract.png", result);
+    return result;
 }
 
 void splitContours(Mat srcAlexa, Mat srcDapi) {

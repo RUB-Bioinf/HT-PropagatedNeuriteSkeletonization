@@ -180,10 +180,12 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
  * @param srcAlexa
  * @param srcDapi
  */
-void splitContours(Mat srcAlexa);
+void splitContours(Mat srcAlexa, Mat srcDAPI);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, int SkeletonPointsWithoutDistTrans, string filenameSuffix);
+
+void compareDistAndDapiFile(Mat dist, Mat dapi);
 
 int main(int argc, char **argv) {
     //system("exec rm -r ../output/*");
@@ -328,12 +330,12 @@ cv::Mat simpleRead() {
     if (matAlexaFile.empty()) {
         throw logic_error("Wrong input data Alexa file...");
     }
-//    string dapiFile = replaceSubstring(imgfile);
-//    Mat matDapiFile = imread(dapiFile);
-//    if (matDapiFile.empty()) {
-//        throw logic_error("Wrong input data DAPI file...");
-//    }
-    splitContours(matAlexaFile);
+    string dapiFile = replaceSubstring(imgfile);
+    Mat matDapiFile = imread(dapiFile);
+    if (matDapiFile.empty()) {
+        throw logic_error("Wrong input data DAPI file...");
+    }
+    splitContours(matAlexaFile, matDapiFile);
     return matAlexaFile;
 }
 
@@ -443,7 +445,7 @@ Mat substractDistFromSkeletonfile(Mat srcSkeleton, Mat dist){
     return result;
 }
 
-void splitContours(Mat srcAlexa) {
+void splitContours(Mat srcAlexa, Mat srcDAPI) {
     Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
     Mat imgLaplacian;
     filter2D(srcAlexa, imgLaplacian, CV_32F, kernel);
@@ -581,6 +583,7 @@ void splitContours(Mat srcAlexa) {
         cvtColor(completeSkeleton, completeSkeleton, COLOR_BGR2GRAY);
         threshold(completeSkeleton, completeSkeleton, 1, 255, THRESH_BINARY | THRESH_OTSU);
         Mat result = substractDistFromSkeletonfile(completeSkeleton, dist);
+        compareDistAndDapiFile(dist, srcDAPI);
         SparseMat newMat2(result);
         int SkeletonPointsCounterComplete2 = newMat2.nzcount();
         consoleOutputCompleteData(SkeletonPointsCounterComplete);
@@ -596,6 +599,47 @@ void splitContours(Mat srcAlexa) {
         throw logic_error("No contours found...");
     }
     findContours(dist_8u, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+}
+
+void compareDistAndDapiFile(Mat dist, Mat dapi){
+    imwrite("DistanceTransformTest.png", dist);
+    Mat dist_8u;
+    dist.convertTo(dist_8u, CV_8U);
+
+    cout << dapi.type() <<endl;
+    Mat dist_8u_dapi;
+    cvtColor(dapi, dist_8u_dapi, COLOR_BGR2GRAY);
+    resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
+    dist_8u_dapi.convertTo(dist_8u_dapi, CV_8UC1);
+    if (dist_8u.rows == dist_8u_dapi.rows && dist_8u.cols == dist_8u_dapi.cols){
+        vector<vector<Point> > contoursDist;
+        vector<Vec4i> hierarchy;
+        findContours(dist_8u, contoursDist, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
+
+        if (!contoursDist.empty() && !hierarchy.empty()) {
+            for (int i = 0; i < contoursDist.size(); i++) {
+                vector<vector<Point> > contoursDapi;
+                vector<Vec4i> hierarchy;
+                findContours(dist_8u_dapi, contoursDapi, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
+                if (!contoursDapi.empty() && !hierarchy.empty()) {
+                    for (int j = 0; j < contoursDapi.size(); j++) {
+                        for (int k = 0; k < contoursDapi[j].size(); k++) {
+                            Point_<int> p = contoursDapi[j][k];
+                            double result = pointPolygonTest(contoursDist[i], p, true);
+                            if(result >=0)
+                            {
+                                cout << "contour in area allowed to stay" << endl;
+                            }else {
+                                cout << "contour not in area delete" << endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }else{
+        throw logic_error("Distance and Dapi file dont have the same size...");
+    }
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,

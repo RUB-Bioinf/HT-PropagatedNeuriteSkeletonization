@@ -64,7 +64,7 @@ using namespace cv;
 string inputImgDefault = "RK5_20200104_SHSY5Y_R_2500_03_Alexa488_02.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
-double epsilonValueDefault = 10.0;
+double epsilonValueDefault = 0.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
 bool openDirectory = true;

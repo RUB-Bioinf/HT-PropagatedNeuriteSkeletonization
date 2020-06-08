@@ -183,9 +183,9 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
 void splitContours(Mat srcAlexa, Mat srcDAPI);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int SkeletonPointsWithoutDistTrans, string filenameSuffix);
+                        list<int> skeletonPointSingleCountList, int SkeletonPointsWithoutDistTrans, int SkeletonPointsDist2, string filenameSuffix);
 
-void compareDistAndDapiFile(Mat dist, Mat dapi);
+Mat compareDistAndDapiFile(Mat dist, Mat dapi);
 
 int main(int argc, char **argv) {
     //system("exec rm -r ../output/*");
@@ -242,6 +242,7 @@ int inputFolderGrabbing(const char *directoryName){
                         imgfile.append("/" + dirName);
                         Mat outClosing = simpleRead();
                     }
+                    //directory found
                     else if (dirName.find(".") == string::npos)
                     {
                         //cout << dirName << endl;
@@ -253,7 +254,6 @@ int inputFolderGrabbing(const char *directoryName){
                         const char *dirNeu = char_array;
                         inputFolderGrabbing(dirNeu);
                     }
-                    //directory found
                     else {
                         //nothing
                     }
@@ -575,7 +575,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte ; Skelettpunkte ohne DistanceTranform \n";
+            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte ; Skelettpunkte ohne DistanceTranform ; neue Dist \n";
             csvFile.close();
         }
         SparseMat newMat(completeSkeleton);
@@ -583,25 +583,36 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         cvtColor(completeSkeleton, completeSkeleton, COLOR_BGR2GRAY);
         threshold(completeSkeleton, completeSkeleton, 1, 255, THRESH_BINARY | THRESH_OTSU);
         Mat result = substractDistFromSkeletonfile(completeSkeleton, dist);
-        compareDistAndDapiFile(dist, srcDAPI);
+        Mat compare = compareDistAndDapiFile(dist, srcDAPI);
+        threshold(compare, compare, 1, 255, THRESH_BINARY);
+        cvtColor(compare, compare, COLOR_BGR2GRAY);
+        Mat result4 = substractDistFromSkeletonfile(completeSkeleton, compare);
+
         SparseMat newMat2(result);
         int SkeletonPointsCounterComplete2 = newMat2.nzcount();
+        SparseMat newMat3(result4);
+        int SkeletonPointsCounterComplete3 = newMat3.nzcount();
         consoleOutputCompleteData(SkeletonPointsCounterComplete);
         consoleOutputCompleteData(SkeletonPointsCounterComplete2);
         imwrite("completeContour.png", completeContour);
-        writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList, SkeletonPointsCounterComplete2,
+        writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList, SkeletonPointsCounterComplete2, SkeletonPointsCounterComplete3,
                            resultFilename);
         Mat test;
         cv::subtract(bw, result, test);
         string filename = setVariableFilenames("-Complete.png", 0);
         imwrite(filename, test);
+
+        Mat test2;
+        cv::subtract(bw, result4, test2);
+        string filename2 = setVariableFilenames("-CompleteNeueDist.png", 0);
+        imwrite(filename2, test2);
     } else {
         throw logic_error("No contours found...");
     }
     findContours(dist_8u, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 }
 
-void compareDistAndDapiFile(Mat dist, Mat dapi){
+Mat compareDistAndDapiFile(Mat dist, Mat dapi){
     imwrite("DistanceTransformTest.png", dist);
     Mat dist_8u;
     dist.convertTo(dist_8u, CV_8U);
@@ -611,6 +622,8 @@ void compareDistAndDapiFile(Mat dist, Mat dapi){
     cvtColor(dapi, dist_8u_dapi, COLOR_BGR2GRAY);
     resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
     dist_8u_dapi.convertTo(dist_8u_dapi, CV_8UC1);
+    Mat resultArr = Mat::zeros(dist_8u.size(), CV_8UC3);
+
     if (dist_8u.rows == dist_8u_dapi.rows && dist_8u.cols == dist_8u_dapi.cols){
         vector<vector<Point> > contoursDist;
         vector<Vec4i> hierarchy;
@@ -628,22 +641,25 @@ void compareDistAndDapiFile(Mat dist, Mat dapi){
                             double result = pointPolygonTest(contoursDist[i], p, true);
                             if(result >=0)
                             {
-                                cout << "contour in area allowed to stay" << endl;
-                            }else {
-                                cout << "contour not in area delete" << endl;
+                                Scalar color(rand() & 255, rand() & 255, rand() & 255);
+                                cv::drawContours(resultArr, contoursDist, (int) i, color, FILLED, 8);
+                                //cout << "contour in area allowed to stay" << endl;
+                                break;
                             }
                         }
                     }
                 }
             }
         }
+        imwrite("DistanceTransformResult.png", resultArr);
     }else{
         throw logic_error("Distance and Dapi file dont have the same size...");
     }
+    return resultArr;
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int skelPointsDistTrans, string filenameSuffix) {
+                        list<int> skeletonPointSingleCountList, int skelPointsDistTrans, int skelPointsDist2, string filenameSuffix) {
     list<int>::iterator itNodes = nodeList.begin();
     list<int>::iterator itBranches = branchList.begin();
     list<double>::iterator itDistances = distanceList.begin();
@@ -675,6 +691,6 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
     csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints
-    << ";" << skelPointsDistTrans << "\n";
+    << ";" << skelPointsDistTrans << ";" << skelPointsDist2 << "\n";
     csvFile.close();
 }

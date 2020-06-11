@@ -183,7 +183,8 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
 void splitContours(Mat srcAlexa, Mat srcDAPI);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int SkeletonPointsDist, string filenameSuffix);
+                        list<int> skeletonPointSingleCountList, int SkeletonPointsDist, int countNucleus,
+                        string filenameSuffix);
 
 Mat compareDistAndDapiFile(Mat dist, Mat dapi);
 
@@ -538,29 +539,30 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte ohne DistanceTranform \n";
+            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterscaliert) / Zellkerne ; \n";
             csvFile.close();
         }
         //
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();
+        consoleOutputCompleteData(SkeletonPointsCounterComplete);
+
         cvtColor(completeSkeleton, completeSkeleton, COLOR_BGR2GRAY);
         threshold(completeSkeleton, completeSkeleton, 1, 255, THRESH_BINARY | THRESH_OTSU);
         //only
         Mat compare = compareDistAndDapiFile(dist, srcDAPI);
         threshold(compare, compare, 1, 255, THRESH_BINARY);
         cvtColor(compare, compare, COLOR_BGR2GRAY);
-        Mat result4 = substractDistFromSkeletonfile(completeSkeleton, compare);
 
-        SparseMat newMat3(result4);
-        int SkeletonPointsCounterComplete3 = newMat3.nzcount();
-        consoleOutputCompleteData(SkeletonPointsCounterComplete);
-
-        writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList, SkeletonPointsCounterComplete3,
-                           resultFilename);
+        Mat result = substractDistFromSkeletonfile(completeSkeleton, compare);
+        SparseMat newMatResult(result);
+        int skeletonPointsCounterCompleteWithoutDist = newMatResult.nzcount();
+        int nucleusCounter = 1;
+        writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
+                           skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
 
         Mat completeWithoutDistanceTrans;
-        cv::subtract(bw, result4, completeWithoutDistanceTrans);
+        cv::subtract(bw, result, completeWithoutDistanceTrans);
         string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
         imwrite(filename2, completeWithoutDistanceTrans);
     } else {
@@ -614,7 +616,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int skelPointsDist, string filenameSuffix) {
+                        list<int> skeletonPointSingleCountList, int skelPointsDist, int countNucleus,  string filenameSuffix) {
     list<int>::iterator itNodes = nodeList.begin();
     list<int>::iterator itBranches = branchList.begin();
     list<double>::iterator itDistances = distanceList.begin();
@@ -645,6 +647,6 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
     csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints
-    << ";" << skelPointsDist << "\n";
+    << ";" << skelPointsDist << ";" <<  skelPointsDist / 4.4 << ";" << countNucleus << ";" << (skelPointsDist / 4.4) / countNucleus << "\n";
     csvFile.close();
 }

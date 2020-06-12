@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
     oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
     auto str = oss.str();
     prefix = str;
-    system("../result.sh");
+    system("../test.sh");
     system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test2.ijm ../ressources/");
     resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
@@ -643,6 +643,8 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     }
     double avgDistances = sumDistances / distanceList.size();
     string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
+
+    double 
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);

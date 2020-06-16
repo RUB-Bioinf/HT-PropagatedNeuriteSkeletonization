@@ -578,8 +578,9 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         dist_8u_dapi.convertTo(dist_8u_dapi, CV_8UC1);
 
         Mat multiChannel = grayToBGR(dist_8u_dapi, bw, result);
-        imwrite("../output/MultiChannel.png", multiChannel);
 
+        string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
+        imwrite(filenameMultiChannelResult, multiChannel);
     } else {
         throw logic_error("No contours found...");
     }

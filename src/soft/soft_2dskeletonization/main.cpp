@@ -192,6 +192,8 @@ string changePointToComma(float number);
 
 int countNucleus(Mat dapiInput);
 
+Mat grayToBGR(Mat blue, Mat green, Mat red);
+
 int main(int argc, char **argv) {
     //system("exec rm -r ../output/*");
     auto t = std::time(nullptr);  
@@ -569,10 +571,19 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         cv::subtract(bw, result, completeWithoutDistanceTrans);
         string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
         imwrite(filename2, completeWithoutDistanceTrans);
+
+        Mat dist_8u_dapi;
+        cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
+        resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
+        dist_8u_dapi.convertTo(dist_8u_dapi, CV_8UC1);
+
+        Mat multiChannel = grayToBGR(dist_8u_dapi, bw, result);
+        imwrite("../output/MultiChannel.png", multiChannel);
+
     } else {
         throw logic_error("No contours found...");
     }
-    findContours(dist_8u, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    //findContours(dist_8u, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 }
 
 Mat compareDistAndDapiFile(Mat dist, Mat dapi){
@@ -684,4 +695,12 @@ int countNucleus(Mat dapiInput){
         }
     }
     return indx;
+}
+
+Mat grayToBGR(Mat blue, Mat green, Mat red){
+    Mat out (blue.rows, blue.cols, CV_8UC3);
+    Mat in[] = {blue, green, red};
+    int from_to[] = {0,0,1,1,2,2};
+    mixChannels(&blue, 3, &out, 1, from_to, 3);
+    return out;
 }

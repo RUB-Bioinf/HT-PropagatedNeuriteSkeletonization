@@ -188,6 +188,10 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 
 Mat compareDistAndDapiFile(Mat dist, Mat dapi);
 
+string changePointToComma(float number);
+
+int countNucleus(Mat dapiInput);
+
 int main(int argc, char **argv) {
     //system("exec rm -r ../output/*");
     auto t = std::time(nullptr);  
@@ -539,7 +543,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterscaliert) / Zellkerne ; \n";
+            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterskaliert) / Zellkerne ; \n";
             csvFile.close();
         }
         //
@@ -557,7 +561,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         Mat result = substractDistFromSkeletonfile(completeSkeleton, compare);
         SparseMat newMatResult(result);
         int skeletonPointsCounterCompleteWithoutDist = newMatResult.nzcount();
-        int nucleusCounter = 1;
+        int nucleusCounter = countNucleus(srcDAPI);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                            skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
 
@@ -644,11 +648,40 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     double avgDistances = sumDistances / distanceList.size();
     string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
 
-    double 
+    float skelfaktor = (skelPointsDist / 4.4);
+    string skelfaktorStr = changePointToComma(skelfaktor);
+    float skelNucleus = skelfaktor / countNucleus;
+    string skelNucleusfaktorStr = changePointToComma(skelNucleus);
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
     csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints
-    << ";" << skelPointsDist << ";" <<  skelPointsDist / 4.4 << ";" << countNucleus << ";" << (skelPointsDist / 4.4) / countNucleus << "\n";
+    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleusfaktorStr << "\n";
     csvFile.close();
+}
+
+string changePointToComma(float number){
+    string str = to_string(number);
+    size_t index = 0;
+    index = str.find(".", index);
+    /* Make the replacement. */
+    str.replace(index, 1, ",");
+    return str;
+}
+
+int countNucleus(Mat dapiInput){
+    Mat dist_8u_dapi;
+    cvtColor(dapiInput, dist_8u_dapi, COLOR_BGR2GRAY);
+    vector<vector<Point> > contoursDapi;
+    vector<Vec4i> hierarchy;
+    findContours(dist_8u_dapi, contoursDapi, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
+    int indx = 0;
+    if (!contoursDapi.empty() && !hierarchy.empty()) {
+        for (int i = 0; i <= contoursDapi.size(); i++) {
+            if (hierarchy[i][3] == -1) {
+                indx++;
+            }
+        }
+    }
+    return indx;
 }

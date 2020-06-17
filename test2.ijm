@@ -28,7 +28,9 @@ function processFolder(input){
 		}
 		if (endsWith(list[i], ".tif"))
 		{
-			processFile(input + list[i]);
+			if (matches(list[i], ".*Alexa.*")){
+				processFile(input + list[i]);
+			}
 		}
 	}
 }

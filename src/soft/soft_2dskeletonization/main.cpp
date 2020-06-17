@@ -222,10 +222,12 @@ string replaceSubstring(string str){
         /* Locate the substring to replace. */
         index = str.find("Alexa", index);
         if (index == std::string::npos) break;
-
         /* Make the replacement. */
         str.replace(index, 8, "DAPI");
 
+        index = str.find("png", index);
+        if (index == std::string::npos) break;
+        str.replace(index, 3, "tif");
         /* Advance index forward so the next iteration doesn't pick it up as well. */
         index += 3;
     }

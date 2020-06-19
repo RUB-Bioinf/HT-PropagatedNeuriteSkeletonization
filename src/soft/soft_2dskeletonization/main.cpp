@@ -224,10 +224,6 @@ string replaceSubstring(string str){
         if (index == std::string::npos) break;
         /* Make the replacement. */
         str.replace(index, 8, "DAPI");
-
-        index = str.find("png", index);
-        if (index == std::string::npos) break;
-        str.replace(index, 3, "tif");
         /* Advance index forward so the next iteration doesn't pick it up as well. */
         index += 3;
     }
@@ -559,8 +555,9 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         threshold(completeSkeleton, completeSkeleton, 1, 255, THRESH_BINARY | THRESH_OTSU);
         //only
         Mat compare = compareDistAndDapiFile(dist, srcDAPI);
-        threshold(compare, compare, 1, 255, THRESH_BINARY);
-        cvtColor(compare, compare, COLOR_BGR2GRAY);
+        auto test99 = compare.type();
+//        threshold(compare, compare, 1, 255, THRESH_BINARY);
+//        cvtColor(compare, compare, COLOR_BGR2GRAY);
 
         Mat result = substractDistFromSkeletonfile(completeSkeleton, compare);
         SparseMat newMatResult(result);
@@ -592,15 +589,21 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
 Mat compareDistAndDapiFile(Mat dist, Mat dapi){
     Mat dist_8u;
     dist.convertTo(dist_8u, CV_8U);
+    imwrite("AlexaDist.png", dist);
 
-    cout << dapi.type() <<endl;
     Mat dist_8u_dapi;
-    cvtColor(dapi, dist_8u_dapi, COLOR_BGR2GRAY);
-    resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
-    dist_8u_dapi.convertTo(dist_8u_dapi, CV_8UC1);
-    Mat resultArr = Mat::zeros(dist_8u.size(), CV_8UC3);
+    Mat thres_dapi;
 
-    if (dist_8u.rows == dist_8u_dapi.rows && dist_8u.cols == dist_8u_dapi.cols){
+    dapi.convertTo(dist_8u_dapi, CV_8UC1);
+    cvtColor(dist_8u_dapi, dist_8u_dapi, COLOR_BGR2GRAY);
+
+    threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
+    imwrite("DapiThresNeu.png", thres_dapi);
+
+    resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
+    Mat resultArr = Mat::zeros(dist_8u.size(), CV_8UC1);
+
+    if (dist_8u.rows == thres_dapi.rows && dist_8u.cols == thres_dapi.cols){
         vector<vector<Point> > contoursDist;
         vector<Vec4i> hierarchy;
         findContours(dist_8u, contoursDist, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
@@ -609,7 +612,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
             for (int i = 0; i < contoursDist.size(); i++) {
                 vector<vector<Point> > contoursDapi;
                 vector<Vec4i> hierarchy;
-                findContours(dist_8u_dapi, contoursDapi, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
+                findContours(thres_dapi, contoursDapi, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
                 if (!contoursDapi.empty() && !hierarchy.empty()) {
                     for (int j = 0; j < contoursDapi.size(); j++) {
                         for (int k = 0; k < contoursDapi[j].size(); k++) {
@@ -630,7 +633,9 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
     }else{
         throw logic_error("Distance and Dapi file dont have the same size...");
     }
-    return resultArr;
+    Mat completeResult;
+    cv::add(resultArr, thres_dapi, completeResult);
+    return completeResult;
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
@@ -685,10 +690,18 @@ string changePointToComma(float number){
 
 int countNucleus(Mat dapiInput){
     Mat dist_8u_dapi;
-    cvtColor(dapiInput, dist_8u_dapi, COLOR_BGR2GRAY);
+    Mat thres_dapi;
+
+    dapiInput.convertTo(dist_8u_dapi, CV_8UC1);
+    cvtColor(dist_8u_dapi, dist_8u_dapi, COLOR_BGR2GRAY);
+
+    threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
+    imwrite("DapiThres.png", thres_dapi);
+
     vector<vector<Point> > contoursDapi;
     vector<Vec4i> hierarchy;
-    findContours(dist_8u_dapi, contoursDapi, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
+    findContours(thres_dapi, contoursDapi, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
+
     int indx = 0;
     if (!contoursDapi.empty() && !hierarchy.empty()) {
         for (int i = 0; i <= contoursDapi.size(); i++) {

@@ -574,10 +574,13 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         Mat dist_8u_dapi;
         cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
         resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
-        dist_8u_dapi.convertTo(dist_8u_dapi, CV_8UC1);
-
-        Mat multiChannel = grayToBGR(dist_8u_dapi, bw, result);
-
+        Mat thres_dapi;
+        threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
+        thres_dapi.convertTo(thres_dapi, CV_8UC1);
+        Mat multiChannel = grayToBGR(thres_dapi, bw, result);
+        Mat multiChannel2 = grayToBGR(result, bw, thres_dapi);
+        string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
+        imwrite(filenameMultiChannelResult2, multiChannel);
         string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
         imwrite(filenameMultiChannelResult, multiChannel);
     } else {

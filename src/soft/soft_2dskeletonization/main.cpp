@@ -577,12 +577,18 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         Mat thres_dapi;
         threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
         thres_dapi.convertTo(thres_dapi, CV_8UC1);
+
         Mat multiChannel = grayToBGR(thres_dapi, bw, result);
-        Mat multiChannel2 = grayToBGR(result, bw, thres_dapi);
-        string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
-        imwrite(filenameMultiChannelResult2, multiChannel);
+
+//        Mat multiChannel2 = grayToBGR(result, bw, thres_dapi);
+//        string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
+//        imwrite(filenameMultiChannelResult2, multiChannel2);
         string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
         imwrite(filenameMultiChannelResult, multiChannel);
+//
+//        Mat multiChannel3 = grayToBGR(bw, thres_dapi, result);
+//        string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
+//        imwrite(filenameMultiChannelResult3, multiChannel3);
     } else {
         throw logic_error("No contours found...");
     }
@@ -717,9 +723,13 @@ int countNucleus(Mat dapiInput){
 }
 
 Mat grayToBGR(Mat blue, Mat green, Mat red){
-    Mat out (blue.rows, blue.cols, CV_8UC3);
-    Mat in[] = {blue, green, red};
+    Mat blueNew, greenNew, redNew;
+    blueNew = blue *0.9;
+    greenNew = green * 0.45;
+    redNew = red;
+    Mat out (blueNew.rows, blueNew.cols, CV_8UC3);
+    Mat in[] = {blueNew, greenNew, redNew};
     int from_to[] = {0,0,1,1,2,2};
-    mixChannels(&blue, 3, &out, 1, from_to, 3);
+    mixChannels(&blueNew, 3, &out, 1, from_to, 3);
     return out;
 }

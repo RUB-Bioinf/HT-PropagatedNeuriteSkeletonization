@@ -57,7 +57,7 @@ using namespace cv;
 string inputImgDefault = "test.png";
 string skeletonImgNameDefault = "skeleton.png";
 string filenameEnding = "-Epsilon1px-skeleton.png";
-double epsilonValueDefault = 10.0;
+double epsilonValueDefault = 5.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
 

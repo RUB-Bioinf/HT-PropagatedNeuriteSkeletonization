@@ -29,9 +29,16 @@ SOFTWARE.
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <iomanip>
+#include <ctime>
 #include <chrono>
 #include <fstream>
 #include <string>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <filesystem>
+#include <iostream>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -63,10 +70,11 @@ bool variableOutputNamesDefault = true;
 
 
 //Declaration globale values
-std::string imgfile, skeletonImgName;
+std::string imgfile, skeletonImgName, prefix;
 bool output = false;
 double epsilon;
 bool variableOutputNames;
+bool openDirectory = true;
 
 
 Mat simpleReadAndConvertBW();
@@ -89,13 +97,9 @@ tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr diss
                                          const boundary::DiscreteBoundary<2>::Ptr disbnd,
                                          const skeleton::GraphSkel2d::Ptr skel);
 
-/**
- * Generates a beautiful console Output
- * @param respropag Tupel with data
- * @param t0 Working time of the algorithm
- * @param skeletonPointsCounter Counter for all skeleton points
- */
-void consoleOutputSingleData(tuple<double, double, int, int> respropag, int t0, int skeletonPointsCounter);
+int inputFolderGrabbing(const char *directoryName);
+
+cv::Mat simpleRead();
 
 /**
  * Print the Skeleton Counter for the hole Image
@@ -157,15 +161,24 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
 
 int main(int argc, char **argv) {
-    system("exec rm -r ../output/*");
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
+    auto str = oss.str();
+    prefix = str;
+    system("../test.sh");
+
     inputValuesRead(argc, argv);
+
     if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
-    Mat outClosing = simpleReadAndConvertBW();
 
-    //exit program
-    return 0;
+    int result = inputFolderGrabbing("../ressources");
+    cout << "fertig" <<endl;
+    return result;
 }
 
 vector<pair<int, int>> getListFromPicture(Mat pic, int i, int j, vector<pair<int, int>> &list) {
@@ -273,12 +286,12 @@ string setVariableFilenames(string filenameSuffix, int i) {
 
     string generatedFilename;
     if (i == 0) {
-        generatedFilename = "../output/" + filename + filenameSuffix;
+        generatedFilename = "../output/" + prefix + "/" + filename + filenameSuffix;
     } else {
         stringstream ss;
         ss << i;
         string str = ss.str();
-        filename = "../output/" + filename + "_" + str;
+        filename = "../output/" + prefix + "/" + filename + "_" + str;
         generatedFilename = filename + filenameSuffix;
     }
     return generatedFilename;
@@ -330,18 +343,56 @@ tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr diss
     return result;
 }
 
-void consoleOutputSingleData(tuple<double, double, int, int> respropag, int t0, int skeletonPointsCounter) {
-    double A0 = get<0>(respropag); // sym area diff
-    double H0 = get<1>(respropag); // Hausdorff dist
-    int N0 = get<2>(respropag); // nb nodes
-    int B0 = get<3>(respropag); // nb branches
+int inputFolderGrabbing(const char *directoryName){
+    DIR *dir;
+    struct dirent *ent;
+    string dirName;
+    if ( openDirectory == true) {
+        if ((dir = opendir(directoryName)) != NULL) {
+            while ((ent = readdir(dir))) {
+                dirName = ent->d_name;
+                if (dirName != "." && dirName != ".." && dirName != ".git") {
+                    //picture data found
+                    if (dirName.find(".png") != string::npos){
+                        imgfile = directoryName;
+                        imgfile.append("/" + dirName);
+                        Mat outClosing = simpleRead();
+                    }
+                        //directory found
+                    else if (dirName.find(".") == string::npos)
+                    {
+                        string fullDirectoryName = directoryName;
+                        fullDirectoryName.append("/" + dirName);
+                        int n = fullDirectoryName.length();
+                        char char_array[n+1];
+                        strcpy (char_array, fullDirectoryName.c_str());
+                        const char *dirNeu = char_array;
+                        inputFolderGrabbing(dirNeu);
+                    }
+                    else {
+                        //nothing
+                    }
+                }
+            }
+            closedir(dir);
+        } else {
+            perror("");
+            return EXIT_FAILURE;
+        }
+    }else {
+        Mat outClosing = simpleRead();
+    }
+    //exit program
+    return 0;
+}
 
-    cout << "Skeleton estmated in " << t0 << "ms." << endl;
-    cout << "Symetric difference area over reference area: " << A0 << "\%" << endl;
-    cout << "Hausdorff distance to reference: " << H0 << "px (epsilon=" << epsilon << "px)" << endl;
-    cout << "Number of branches: " << B0 << endl;
-    cout << "Number of nodes: " << N0 << endl;
-    cout << "Number of skeleton points: " << skeletonPointsCounter << endl;
+cv::Mat simpleRead() {
+    Mat matAlexaFile = imread(imgfile);
+    if (matAlexaFile.empty()) {
+        throw logic_error("Wrong input data...");
+    }
+    splitContours(matAlexaFile);
+    return matAlexaFile;
 }
 
 void consoleOutputCompleteData(int skeletonPointsCounter) {
@@ -562,7 +613,8 @@ void splitContours(Mat src) {
                         }
                     }
                     ofstream exp;
-                    exp.open("../output/contractSet.csv");
+                    string filenameContractSet = "../output/" + prefix + "/contractSet.csv";
+                    exp.open(filenameContractSet);
 
                     for(auto& t : contractlist2){
                         auto first = t.first;

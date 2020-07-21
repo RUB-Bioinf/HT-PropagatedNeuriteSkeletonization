@@ -197,7 +197,7 @@ Mat grayToBGR(Mat blue, Mat green, Mat red);
 int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat completeIMG, Mat completeBoundary, vector<Vec4i> hierarchy, vector<vector<Point> > contours, list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                      list<int> skeletonPointSingleCountList, int i, int indx);
 
-void generateCSVForIUF(string filename, string resultFilename, double skeletonPoints, int nucleus);
+void generateCSVForIUF(string filename, double skeletonPoints, int nucleus);
 
 vector<string> split(const string& str, const string& delim);
 
@@ -345,6 +345,7 @@ cv::Mat simpleRead() {
     if (matDapiFile.empty()) {
         throw logic_error("Wrong input data DAPI file...");
     }
+    generateCSVForIUF( imgfile, 0, 0);
     splitContours(matAlexaFile, matDapiFile);
     return matAlexaFile;
 }
@@ -523,8 +524,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         int nucleusCounter = countNucleus(srcDAPI);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                            skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
-        string iufFilename = setVariableFilenames("IUF.csv", 0);
-        generateCSVForIUF(imgfile, iufFilename, skeletonPointsCounterCompleteWithoutDist, nucleusCounter);
+        generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter);
 
         Mat completeWithoutDistanceTrans;
         cv::subtract(bw, result, completeWithoutDistanceTrans);
@@ -772,23 +772,26 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
     }
     return indx++;
 }
- void generateCSVForIUF(string filename, string resultFilename, double skeletonPoints, int nucleus){
-     ifstream file(resultFilename);
+ void generateCSVForIUF(string filename, double skeletonPoints, int nucleus){
+     vector<string> parthOfFile = split(filename, "/");
+     int lenghtVector = parthOfFile.size();
+     std::string path = parthOfFile[0] + "/output/";
+     string resultFileIUF = path + "IUF.csv";
+     ifstream file(resultFileIUF);
      //check if file not exists and creates one with headlines
      if(!file.good()){
-         ofstream csvFile(resultFilename);
+         ofstream csvFile(resultFileIUF);
          csvFile << "Experiment ID ; Rotenonconzentration ; Well ; Average neurite length ; Nucleus ;\n";
          csvFile.close();
      }
      // create metadata
-     vector<string> parthOfFile = split(filename, "/");
-     int lenghtVector = parthOfFile.size();
+
      std::string sxperiment = parthOfFile[lenghtVector-1].substr(0, parthOfFile[lenghtVector-1].find("_"));
      vector<string> fileNameParts = split(parthOfFile[lenghtVector-1], "_");
      string concentration = fileNameParts[4];
      string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
 
-     ofstream csvFile(resultFilename, ios::app);
+     ofstream csvFile(resultFileIUF, ios::app);
      csvFile << sxperiment << ";" << concentration << ";" << well << ";" << skeletonPoints << ";" << nucleus << ";\n";
      csvFile.close();
 }

@@ -197,6 +197,11 @@ Mat grayToBGR(Mat blue, Mat green, Mat red);
 int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat completeIMG, Mat completeBoundary, vector<Vec4i> hierarchy, vector<vector<Point> > contours, list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                      list<int> skeletonPointSingleCountList, int i, int indx);
 
+void generateCSVForIUF(string filename, string resultFilename, double skeletonPoints, int nucleus);
+
+vector<string> split(const string& str, const string& delim);
+
+
 int main(int argc, char **argv) {
     //system("exec rm -r ../output/*");
     auto t = std::time(nullptr);  
@@ -518,6 +523,8 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         int nucleusCounter = countNucleus(srcDAPI);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                            skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
+        string iufFilename = setVariableFilenames("IUF.csv", 0);
+        generateCSVForIUF(imgfile, iufFilename, skeletonPointsCounterCompleteWithoutDist, nucleusCounter);
 
         Mat completeWithoutDistanceTrans;
         cv::subtract(bw, result, completeWithoutDistanceTrans);
@@ -764,4 +771,40 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
         indx++;
     }
     return indx++;
+}
+ void generateCSVForIUF(string filename, string resultFilename, double skeletonPoints, int nucleus){
+     ifstream file(resultFilename);
+     //check if file not exists and creates one with headlines
+     if(!file.good()){
+         ofstream csvFile(resultFilename);
+         csvFile << "Experiment ID ; Rotenonconzentration ; Well ; Average neurite length ; Nucleus ;\n";
+         csvFile.close();
+     }
+     // create metadata
+     vector<string> parthOfFile = split(filename, "/");
+     int lenghtVector = parthOfFile.size();
+     std::string sxperiment = parthOfFile[lenghtVector-1].substr(0, parthOfFile[lenghtVector-1].find("_"));
+     vector<string> fileNameParts = split(parthOfFile[lenghtVector-1], "_");
+     string concentration = fileNameParts[4];
+     string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
+
+     ofstream csvFile(resultFilename, ios::app);
+     csvFile << sxperiment << ";" << concentration << ";" << well << ";" << skeletonPoints << ";" << nucleus << ";\n";
+     csvFile.close();
+}
+
+vector<string> split(const string& str, const string& delim)
+{
+    vector<string> tokens;
+    size_t prev = 0, pos = 0;
+    do
+    {
+        pos = str.find(delim, prev);
+        if (pos == string::npos) pos = str.length();
+        string token = str.substr(prev, pos-prev);
+        if (!token.empty()) tokens.push_back(token);
+        prev = pos + delim.length();
+    }
+    while (pos < str.length() && prev < str.length());
+    return tokens;
 }

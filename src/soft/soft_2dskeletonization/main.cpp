@@ -775,7 +775,7 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
  void generateCSVForIUF(string filename, double skeletonPoints, int nucleus){
      vector<string> parthOfFile = split(filename, "/");
      int lenghtVector = parthOfFile.size();
-     std::string path = parthOfFile[0] + "/output/";
+     std::string path = parthOfFile[0] + "/output/" + prefix + "/";
      string resultFileIUF = path + "IUF.csv";
      ifstream file(resultFileIUF);
      //check if file not exists and creates one with headlines

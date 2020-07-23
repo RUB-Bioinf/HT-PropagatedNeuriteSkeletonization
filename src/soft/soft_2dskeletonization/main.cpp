@@ -345,7 +345,7 @@ cv::Mat simpleRead() {
     if (matDapiFile.empty()) {
         throw logic_error("Wrong input data DAPI file...");
     }
-    generateCSVForIUF( imgfile, 0, 0);
+    //generateCSVForIUF( imgfile, 0, 0);
     splitContours(matAlexaFile, matDapiFile);
     return matAlexaFile;
 }
@@ -792,7 +792,7 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
      string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
 
      ofstream csvFile(resultFileIUF, ios::app);
-     csvFile << sxperiment << ";" << concentration << ";" << well << ";" << skeletonPoints << ";" << nucleus << ";\n";
+     csvFile << sxperiment << ";" << concentration << ";" << well << ";" << (skeletonPoints/4.4) << ";" << nucleus << ";\n";
      csvFile.close();
 }
 

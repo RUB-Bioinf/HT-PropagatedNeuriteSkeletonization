@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <ctime>
 #include <chrono>
@@ -71,10 +72,16 @@ bool openDirectory = true;
 
 
 //Declaration globale values
-std::string imgfile, skeletonImgName, prefix, resultFilename;
+std::string imgfile, skeletonImgName, prefix, resultFilename, toxin;
 bool output = false;
 double epsilon;
 bool variableOutputNames;
+
+/**
+ *
+ * @return a vector with all metadata lines
+ */
+vector <pair<string,string> > inputMetadata();
 
 /**
  *
@@ -180,7 +187,7 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
  * @param srcAlexa
  * @param srcDapi
  */
-void splitContours(Mat srcAlexa, Mat srcDAPI);
+void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  metadata);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, int SkeletonPointsDist, int countNucleus,
@@ -197,7 +204,7 @@ Mat grayToBGR(Mat blue, Mat green, Mat red);
 int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat completeIMG, Mat completeBoundary, vector<Vec4i> hierarchy, vector<vector<Point> > contours, list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                      list<int> skeletonPointSingleCountList, int i, int indx);
 
-void generateCSVForIUF(string filename, double skeletonPoints, int nucleus);
+void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> >, list<int> branchList, int nucleusArea, int maskedZytoplasmn);
 
 vector<string> split(const string& str, const string& delim);
 
@@ -222,6 +229,42 @@ int main(int argc, char **argv) {
     int result = inputFolderGrabbing("../ressources");
     cout << "fertig" <<endl;
     return result;
+}
+
+vector <pair<string,string> > inputMetadata(){
+    //get number of lines
+    pair <string, string> data;
+    vector <pair<string,string> > maskedUnmasked;
+    ifstream csvread;
+
+    csvread.open("../ressources/metadata.csv", ios::in);
+    int i = 0;
+    if (csvread) {
+        //Read complete file and cut at ';'
+        string s = "";
+        string masked = "";
+        string unmasked = "";
+        while (getline(csvread, s, '\n'))
+        {
+            size_t index = s.find(";");
+            if (index != std::string::npos){
+                vector<string> v = split(s, ";");
+                masked = v[0];
+                unmasked = v[1];
+                data = make_pair(masked,unmasked);
+                maskedUnmasked.push_back(data);
+            }
+            else{
+                std::string token = s.substr(0, s.length()-1);
+                toxin = token;
+            }
+        }
+        csvread.close();
+    }
+    else {
+        cerr << "Fehler beim Lesen!" << endl;
+    }
+    return maskedUnmasked;
 }
 
 string replaceSubstring(string str){
@@ -346,7 +389,8 @@ cv::Mat simpleRead() {
         throw logic_error("Wrong input data DAPI file...");
     }
     //generateCSVForIUF( imgfile, 0, 0);
-    splitContours(matAlexaFile, matDapiFile);
+    vector <pair<string,string> >  metadata = inputMetadata();
+    splitContours(matAlexaFile, matDapiFile, metadata);
     return matAlexaFile;
 }
 
@@ -438,7 +482,7 @@ Mat substractDistFromSkeletonfile(Mat srcSkeleton, Mat dist){
     return result;
 }
 
-void splitContours(Mat srcAlexa, Mat srcDAPI) {
+void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  metadata) {
     Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
     Mat imgLaplacian;
     filter2D(srcAlexa, imgLaplacian, CV_32F, kernel);
@@ -514,9 +558,9 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         threshold(completeSkeleton, completeSkeleton, 1, 255, THRESH_BINARY | THRESH_OTSU);
         //only
         Mat compare = compareDistAndDapiFile(dist, srcDAPI);
-        auto test99 = compare.type();
-//        threshold(compare, compare, 1, 255, THRESH_BINARY);
-//        cvtColor(compare, compare, COLOR_BGR2GRAY);
+        SparseMat maskedZytoplasmnBin(compare);
+        int maskedZytoplasmn = maskedZytoplasmnBin.nzcount();
+
 
         Mat result = substractDistFromSkeletonfile(completeSkeleton, compare);
         SparseMat newMatResult(result);
@@ -524,7 +568,6 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         int nucleusCounter = countNucleus(srcDAPI);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                            skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
-        generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter);
 
         Mat completeWithoutDistanceTrans;
         cv::subtract(bw, result, completeWithoutDistanceTrans);
@@ -537,6 +580,11 @@ void splitContours(Mat srcAlexa, Mat srcDAPI) {
         Mat thres_dapi;
         threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
         thres_dapi.convertTo(thres_dapi, CV_8UC1);
+        SparseMat dapiBin(thres_dapi);
+        int dapiArea = dapiBin.nzcount();
+
+        generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter,metadata, branchList,
+                dapiArea, maskedZytoplasmn);
 
         Mat multiChannel = grayToBGR(thres_dapi, bw, result);
 
@@ -772,7 +820,8 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
     }
     return indx++;
 }
- void generateCSVForIUF(string filename, double skeletonPoints, int nucleus){
+ void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> > metadata,
+         list<int> branchList, int nucleusArea, int maskedZytoplasmn){
      vector<string> parthOfFile = split(filename, "/");
      int lenghtVector = parthOfFile.size();
      std::string path = parthOfFile[0] + "/output/" + prefix + "/";
@@ -781,18 +830,37 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
      //check if file not exists and creates one with headlines
      if(!file.good()){
          ofstream csvFile(resultFileIUF);
-         csvFile << "Experiment ID ; Rotenonconzentration ; Well ; Average neurite length ; Nucleus ;\n";
+         csvFile << "Experiment ID ; " + toxin + " ; Well ; Sum neurite length ; Nucleus ; Average neurite length ; Sum branches complete skelett ; Sum nucleus area ; Average nucleus area ; Masked zytoplasmn\n";
          csvFile.close();
+     }
+
+     list<int>::iterator itBranches = branchList.begin();
+     int sumBranches = 0;
+     for (; itBranches != branchList.end(); itBranches++) {
+             sumBranches = sumBranches + *itBranches;
      }
      // create metadata
 
-     std::string sxperiment = parthOfFile[lenghtVector-1].substr(0, parthOfFile[lenghtVector-1].find("_"));
+     std::string experiment = parthOfFile[lenghtVector-1].substr(0, parthOfFile[lenghtVector-1].find("_"));
      vector<string> fileNameParts = split(parthOfFile[lenghtVector-1], "_");
-     string concentration = fileNameParts[4];
+     string maskedConcentration = fileNameParts[3];
+     string unmaskedConcentration;
+     if(maskedConcentration != "R" && maskedConcentration != "ctrlctrl" && maskedConcentration != "ctrlDMSO"){
+         for(int i = 0; i < metadata.size(); i++){
+             if(maskedConcentration == metadata[i].first)
+                 unmaskedConcentration = metadata[i].second;
+         }
+     } else if (maskedConcentration == "R"){
+         unmaskedConcentration = fileNameParts[4];
+     } else if (maskedConcentration != "ctrlctrl"){
+         unmaskedConcentration = "Positive control (PC)";
+     }else{
+         unmaskedConcentration = "Solvent control (SC)";
+     }
      string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
 
      ofstream csvFile(resultFileIUF, ios::app);
-     csvFile << sxperiment << ";" << concentration << ";" << well << ";" << (skeletonPoints/4.4) << ";" << nucleus << ";\n";
+     csvFile << experiment << ";" << unmaskedConcentration << ";" << well << ";" << (skeletonPoints/4.4) << ";" << nucleus << ";" << (skeletonPoints/4.4) / nucleus << ";" << sumBranches << ";" << nucleusArea << ";" << (nucleusArea / nucleus) << ";" << maskedZytoplasmn <<"\n";
      csvFile.close();
 }
 

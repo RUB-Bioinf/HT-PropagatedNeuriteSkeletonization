@@ -95,13 +95,13 @@ string replaceSubstring(string str);
  * @param directoryName Name of the directory to grab at
  * @return Error numbers for failure
  */
-int inputFolderGrabbing(const char *directoryName);
+int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >  metadata);
 
 /**
  *
  * @return
  */
-Mat simpleRead();
+Mat simpleRead(vector <pair<string,string> >  metadata);
 
 /**
  * Reads the command line parameters and input it to globale params
@@ -226,7 +226,8 @@ int main(int argc, char **argv) {
     if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
-    int result = inputFolderGrabbing("../ressources");
+    vector <pair<string,string> >  metadata = inputMetadata();
+    int result = inputFolderGrabbing("../ressources", metadata);
     cout << "fertig" <<endl;
     return result;
 }
@@ -281,7 +282,7 @@ string replaceSubstring(string str){
     return str;
 }
 
-int inputFolderGrabbing(const char *directoryName){
+int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >  metadata){
     DIR *dir;
     struct dirent *ent;
     string dirName;
@@ -294,7 +295,7 @@ int inputFolderGrabbing(const char *directoryName){
                     if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
                         imgfile = directoryName;
                         imgfile.append("/" + dirName);
-                        Mat outClosing = simpleRead();
+                        Mat outClosing = simpleRead(metadata);
                     }
                     //directory found
                     else if (dirName.find(".") == string::npos)
@@ -305,7 +306,7 @@ int inputFolderGrabbing(const char *directoryName){
                         char char_array[n+1];
                         strcpy (char_array, fullDirectoryName.c_str());
                         const char *dirNeu = char_array;
-                        inputFolderGrabbing(dirNeu);
+                        inputFolderGrabbing(dirNeu, metadata);
                     }
                     else {
                         //nothing
@@ -318,7 +319,7 @@ int inputFolderGrabbing(const char *directoryName){
             return EXIT_FAILURE;
         }
     }else {
-        Mat outClosing = simpleRead();
+        Mat outClosing = simpleRead(metadata);
     }
     //exit program
     return 0;
@@ -378,7 +379,7 @@ string setVariableFilenames(string filenameSuffix, int i) {
     return generatedFilename;
 }
 
-cv::Mat simpleRead() {
+cv::Mat simpleRead(vector <pair<string,string> >  metadata) {
     Mat matAlexaFile = imread(imgfile);
     if (matAlexaFile.empty()) {
         throw logic_error("Wrong input data Alexa file...");
@@ -389,7 +390,6 @@ cv::Mat simpleRead() {
         throw logic_error("Wrong input data DAPI file...");
     }
     //generateCSVForIUF( imgfile, 0, 0);
-    vector <pair<string,string> >  metadata = inputMetadata();
     splitContours(matAlexaFile, matDapiFile, metadata);
     return matAlexaFile;
 }
@@ -822,6 +822,7 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
 }
  void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> > metadata,
          list<int> branchList, int nucleusArea, int maskedZytoplasmn){
+
      vector<string> parthOfFile = split(filename, "/");
      int lenghtVector = parthOfFile.size();
      std::string path = parthOfFile[0] + "/output/" + prefix + "/";
@@ -845,18 +846,28 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
      vector<string> fileNameParts = split(parthOfFile[lenghtVector-1], "_");
      string maskedConcentration = fileNameParts[3];
      string unmaskedConcentration;
-     if(maskedConcentration != "R" && maskedConcentration != "ctrlctrl" && maskedConcentration != "ctrlDMSO"){
-         for(int i = 0; i < metadata.size(); i++){
-             if(maskedConcentration == metadata[i].first)
-                 unmaskedConcentration = metadata[i].second;
+
+     if(maskedConcentration.size() > 0){
+         if(maskedConcentration != "R" && maskedConcentration != "ctrlctrl" && maskedConcentration != "ctrlDMSO"){
+             for(int i = 0; i < metadata.size(); i++){
+                 if(maskedConcentration == metadata[i].first)
+                     if(metadata[i].second == "ctrlctrl"){
+                         unmaskedConcentration = "Positive control (PC)";
+                     }else if (metadata[i].second == "ctrlDMSO"){
+                         unmaskedConcentration = "Solvent control (SC)";
+                     } else{
+                         unmaskedConcentration = metadata[i].second;
+                     }
+             }
+         } else if (maskedConcentration == "R"){
+             unmaskedConcentration = fileNameParts[4];
+         } else if (maskedConcentration != "ctrlctrl"){
+             unmaskedConcentration = "Positive control (PC)";
+         }else{
+             unmaskedConcentration = "Solvent control (SC)";
          }
-     } else if (maskedConcentration == "R"){
-         unmaskedConcentration = fileNameParts[4];
-     } else if (maskedConcentration != "ctrlctrl"){
-         unmaskedConcentration = "Positive control (PC)";
-     }else{
-         unmaskedConcentration = "Solvent control (SC)";
      }
+
      string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
 
      ofstream csvFile(resultFileIUF, ios::app);

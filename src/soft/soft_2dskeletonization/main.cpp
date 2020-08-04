@@ -56,6 +56,7 @@ SOFTWARE.
 #include <displayopencv/DisplayShapeOCV.h>
 #include <displayopencv/DisplayBoundaryOCV.h>
 #include <displayopencv/DisplaySkeletonOCV.h>
+#include <algorithm/skeletonization/BoundaryOperations.h>
 
 using namespace std;
 using namespace cv;
@@ -159,6 +160,8 @@ vector<pair<int, int>> getListFromPicture(Mat pic);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
+
+void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::DiscreteBoundary<2>::Ptr disbnd);
 
 int main(int argc, char **argv) {
     auto t = std::time(nullptr);
@@ -645,6 +648,7 @@ void splitContours(Mat src) {
                     skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
                     writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                                        "-skeletonData.csv");
+                    getClosestInd(grskelpropag, disbnd);
                     indx++;
                 }
             }
@@ -677,6 +681,37 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
                it5 != skeletonPointSingleCountList.end(); it1++, it2++, it3++, it4++, it5++) {
             csvFile << *it1 << "," << *it2 << "," << *it3 << "," << *it4 << "," << *it5 << "\n";
         }
+    }
+    csvFile.close();
+}
+
+
+void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::DiscreteBoundary<2>::Ptr disbnd) {
+
+// creation of the optimized boundary structure
+    algorithm::skeletonization::propagation::OptiBnd optiBnd;
+    algorithm::skeletonization::propagation::OptiUsedBnd optiUsedBnd;
+    createOptiBnd(disbnd, optiBnd, optiUsedBnd);
+    std::list<unsigned int> lind;
+    grskelpropag->getAllNodes(lind);
+
+    string csvFilename = setVariableFilenames("closestInds.csv", 0);
+    ofstream csvFile(csvFilename);
+    for (auto x : lind) {
+        std::list<unsigned int> closest;
+        auto y = grskelpropag->getNode<mathtools::geometry::euclidian::HyperSphere<2>>(x);
+        auto z = y.getCenter().getCoords();
+        std::cout << z[0] << "/" << z[1] << ": ";
+        csvFile <<  z[0] << "," << z[1] << ";";
+
+                  algorithm::skeletonization::propagation::closestInd(optiBnd, z, closest);
+        for (auto w : closest){
+            auto g = optiBnd[w];
+            std::cout << g.coords[0] << "/" << g.coords[1] << "; ";
+            csvFile <<  g.coords[0] << "," << g.coords[1] << "|";
+        }
+        csvFile << "; \n";
+        std::cout << std::endl;
     }
     csvFile.close();
 }

@@ -557,20 +557,20 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         cvtColor(completeSkeleton, completeSkeleton, COLOR_BGR2GRAY);
         threshold(completeSkeleton, completeSkeleton, 1, 255, THRESH_BINARY | THRESH_OTSU);
         //only
-        Mat compare = compareDistAndDapiFile(dist, srcDAPI);
-        SparseMat maskedZytoplasmnBin(compare);
-        int maskedZytoplasmn = maskedZytoplasmnBin.nzcount();
+        //Mat compare = compareDistAndDapiFile(dist, srcDAPI);
+        //SparseMat maskedZytoplasmnBin(compare);
+        //int maskedZytoplasmn = maskedZytoplasmnBin.nzcount();
 
 
-        Mat result = substractDistFromSkeletonfile(completeSkeleton, compare);
-        SparseMat newMatResult(result);
-        int skeletonPointsCounterCompleteWithoutDist = newMatResult.nzcount();
+        //Mat result = substractDistFromSkeletonfile(completeSkeleton, compare);
+        //SparseMat newMatResult(result);
+//        int skeletonPointsCounterCompleteWithoutDist = newMatResult.nzcount();
         int nucleusCounter = countNucleus(srcDAPI);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
-                           skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
+                           0, nucleusCounter, resultFilename);
 
         Mat completeWithoutDistanceTrans;
-        cv::subtract(bw, result, completeWithoutDistanceTrans);
+        //cv::subtract(bw, result, completeWithoutDistanceTrans);
         string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
         imwrite(filename2, completeWithoutDistanceTrans);
 
@@ -583,10 +583,10 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         SparseMat dapiBin(thres_dapi);
         int dapiArea = dapiBin.nzcount();
 
-        generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter,metadata, branchList,
-                dapiArea, maskedZytoplasmn);
+        generateCSVForIUF(imgfile, 0, nucleusCounter,metadata, branchList,
+                dapiArea, 0);
 
-        Mat multiChannel = grayToBGR(thres_dapi, bw, result);
+        Mat multiChannel = grayToBGR(thres_dapi, bw, completeSkeleton);
 
 //        Mat multiChannel2 = grayToBGR(result, bw, thres_dapi);
 //        string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);

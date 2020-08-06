@@ -14,7 +14,7 @@ function processFile(input){
 	setMinAndMax(min, (max/2));
 	run("Apply LUT");
 	run("8-bit");
-	run("Auto Local Threshold", "method=Phansalkar radius=75 parameter_1=0 parameter_2=0 white");
+	run("Auto Local Threshold", "method=Phansalkar radius=35 parameter_1=0 parameter_2=0 white");
 	saveAs("PNG", ".."+ subStr[0]);
 	close();
 }

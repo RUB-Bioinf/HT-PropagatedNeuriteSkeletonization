@@ -535,10 +535,60 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         for (int i = 0; i <= contours.size(); i++) {
             if (hierarchy[i][3] == -1) {
                 double area = contourArea(contours[i]);
-                if (!(area <=200)) {
-                    int indx = generateSkeleton(dist_8u, completeContour, completeSkeleton, completeIMG,
-                            completeBoundary, hierarchy, contours, nodeList, branchList, distanceList, timeList,
-                            skeletonPointSingleCountList, i, indx);
+                if ((area > 200)) {
+                    Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
+                    Scalar color(rand() & 255, rand() & 255, rand() & 255);
+                    drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);
+                    drawContours(completeContour, contours, (int) i, color, FILLED, 8, hierarchy);
+                    imwrite("../output/SingleContour.png", singleContour);
+                    imwrite("../output/SingleContour.png", singleContour);
+
+                    threshold(singleContour, singleContour, 1, 255, THRESH_BINARY);
+                    cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
+                    imwrite("../output/Mopho_Output.png", singleContour);
+
+                    shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(
+                            new shape::DiscreteShape<2>(singleContour.cols,
+                                                        singleContour.rows));
+                    Mat cpymat(singleContour.rows, singleContour.cols, CV_8U, &dissh->getContainer()[0]);
+                    singleContour.copyTo(cpymat);
+                    Mat image(singleContour.rows, singleContour.cols, CV_8UC3, cv::Scalar(255, 255, 255));
+
+                    boundary::DiscreteBoundary<2>::Ptr disbnd = algorithm::extractboundary::NaiveBoundary(dissh);
+
+                    auto start0 = std::chrono::steady_clock::now();
+                    algorithm::skeletonization::propagation::OptionsSphProp options(2.0 * epsilon);
+                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist;
+                    skeleton::GraphSkel2d::Ptr grskelpropag = algorithm::skeletonization::propagation::SpherePropagation2D(
+                            contractlist, disbnd,
+                            options);
+                    auto duration0 = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start0);
+                    tuple<double, double, int, int> respropag = EvalSkel(dissh, disbnd, grskelpropag);
+                    int t0 = duration0.count();
+
+
+                    shape::DiscreteShape<2>::Ptr shppropag(
+                            new shape::DiscreteShape<2>(dissh->getWidth(), dissh->getHeight()));
+                    algorithm::skinning::Filling(shppropag, grskelpropag);
+
+                    Mat skelImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
+                    Mat skeletonImg = generateSkeletonImage(skelImg, dissh, grskelpropag, indx);
+                    generateSkeletonImage(completeSkeleton, dissh, grskelpropag, 0);
+                    SparseMat newMat(skeletonImg);
+                    int SkeletonPointsCounter = newMat.nzcount();
+                    if (SkeletonPointsCounter != 0){
+                        Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
+                        generateCompleteImage(completeIMG, dissh, disbnd, shppropag, grskelpropag, 0);
+                        Mat boundImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
+                        generateBoundaryImage(completeBoundary, dissh, disbnd, "-BoundaryImg.png",  0);
+
+                        nodeList.push_back(get<2>(respropag));
+                        branchList.push_back(get<3>(respropag));
+                        distanceList.push_back(get<1>(respropag));
+                        timeList.push_back(t0);
+                        skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
+                        indx++;
+                    }
                 }
             }
         }
@@ -765,60 +815,7 @@ Mat grayToBGR(Mat blue, Mat green, Mat red){
 
 int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat completeIMG, Mat completeBoundary, vector<Vec4i> hierarchy, vector<vector<Point> > contours, list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                      list<int> skeletonPointSingleCountList, int i, int indx) {
-    Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
-    Scalar color(rand() & 255, rand() & 255, rand() & 255);
-    drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);
-    drawContours(completeContour, contours, (int) i, color, FILLED, 8, hierarchy);
-    imwrite("../output/SingleContour.png", singleContour);
-    imwrite("../output/SingleContour.png", singleContour);
 
-    threshold(singleContour, singleContour, 1, 255, THRESH_BINARY);
-    cvtColor(singleContour, singleContour, COLOR_BGR2GRAY);
-    imwrite("../output/Mopho_Output.png", singleContour);
-
-    shape::DiscreteShape<2>::Ptr dissh = shape::DiscreteShape<2>::Ptr(
-            new shape::DiscreteShape<2>(singleContour.cols,
-                                        singleContour.rows));
-    Mat cpymat(singleContour.rows, singleContour.cols, CV_8U, &dissh->getContainer()[0]);
-    singleContour.copyTo(cpymat);
-    Mat image(singleContour.rows, singleContour.cols, CV_8UC3, cv::Scalar(255, 255, 255));
-
-    boundary::DiscreteBoundary<2>::Ptr disbnd = algorithm::extractboundary::NaiveBoundary(dissh);
-
-    auto start0 = std::chrono::steady_clock::now();
-    algorithm::skeletonization::propagation::OptionsSphProp options(2.0 * epsilon);
-    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist;
-    skeleton::GraphSkel2d::Ptr grskelpropag = algorithm::skeletonization::propagation::SpherePropagation2D(
-            contractlist, disbnd,
-            options);
-    auto duration0 = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start0);
-    tuple<double, double, int, int> respropag = EvalSkel(dissh, disbnd, grskelpropag);
-    int t0 = duration0.count();
-
-
-    shape::DiscreteShape<2>::Ptr shppropag(
-            new shape::DiscreteShape<2>(dissh->getWidth(), dissh->getHeight()));
-    algorithm::skinning::Filling(shppropag, grskelpropag);
-
-    Mat skelImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
-    Mat skeletonImg = generateSkeletonImage(skelImg, dissh, grskelpropag, indx);
-    generateSkeletonImage(completeSkeleton, dissh, grskelpropag, 0);
-    SparseMat newMat(skeletonImg);
-    int SkeletonPointsCounter = newMat.nzcount();
-    if (SkeletonPointsCounter != 0){
-        Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
-        generateCompleteImage(completeIMG, dissh, disbnd, shppropag, grskelpropag, 0);
-        Mat boundImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
-        generateBoundaryImage(completeBoundary, dissh, disbnd, "-BoundaryImg.png",  0);
-
-        nodeList.push_back(get<2>(respropag));
-        branchList.push_back(get<3>(respropag));
-        distanceList.push_back(get<1>(respropag));
-        timeList.push_back(t0);
-        skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
-        indx++;
-    }
-    return indx++;
 }
  void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> > metadata,
          list<int> branchList, int nucleusArea, int maskedZytoplasmn){

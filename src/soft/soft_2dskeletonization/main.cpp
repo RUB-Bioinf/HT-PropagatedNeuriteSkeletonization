@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
     auto str = oss.str();
     prefix = str;
     system("../test.sh");
-    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../makroWithoutBrightnessChanging.ijm ../ressources/");
+    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test3.ijm ../ressources/");
     resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 

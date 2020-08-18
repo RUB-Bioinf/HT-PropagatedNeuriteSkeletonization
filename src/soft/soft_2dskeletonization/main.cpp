@@ -442,6 +442,8 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
                           int i) {
     displayopencv::DisplayGraphSkeleton(grskelpropag, inputImage, dissh->getFrame(),
                                         cv::Scalar(255, 255, 255));
+    threshold(inputImage, inputImage, 0.4, 255, THRESH_BINARY);
+    threshold(inputImage, inputImage, 0.4, 255, THRESH_BINARY);
     string filename = setVariableFilenames("-SkeletonImg.png", i);
     if (i == 0) {
         imwrite(filename, inputImage);

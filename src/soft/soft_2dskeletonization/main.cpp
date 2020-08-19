@@ -617,10 +617,10 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                            0, nucleusCounter, resultFilename);
 
-        Mat completeWithoutDistanceTrans;
+        //Mat completeWithoutDistanceTrans;
         //cv::subtract(bw, result, completeWithoutDistanceTrans);
-        string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
-        imwrite(filename2, completeWithoutDistanceTrans);
+//        string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
+//        imwrite(filename2, completeWithoutDistanceTrans);
 
         Mat dist_8u_dapi;
         cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
@@ -732,9 +732,9 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     double avgDistances = sumDistances / distanceList.size();
     string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
 
-    float skelfaktor = (skelPointsDist / 4.4);
+    float skelfaktor = skelPointsDist;
     string skelfaktorStr = changePointToComma(skelfaktor);
-    float skelNucleus = skelfaktor / countNucleus;
+    float skelNucleus = sumSkelPoints / countNucleus;
     string skelNucleusfaktorStr = changePointToComma(skelNucleus);
 
     //Write data in file

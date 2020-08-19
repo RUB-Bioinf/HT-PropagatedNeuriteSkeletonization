@@ -201,9 +201,6 @@ int countNucleus(Mat dapiInput);
 
 Mat grayToBGR(Mat blue, Mat green, Mat red);
 
-int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat completeIMG, Mat completeBoundary, vector<Vec4i> hierarchy, vector<vector<Point> > contours, list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                     list<int> skeletonPointSingleCountList, int i, int indx);
-
 void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> >, list<int> branchList, int nucleusArea, int maskedZytoplasmn);
 
 vector<string> split(const string& str, const string& delim);
@@ -752,8 +749,9 @@ string changePointToComma(float number){
     string str = to_string(number);
     size_t index = 0;
     index = str.find(".", index);
+    if (index != std::string::npos )
     /* Make the replacement. */
-    str.replace(index, 1, ",");
+        str.replace(index, 1, ",");
     return str;
 }
 
@@ -815,10 +813,6 @@ Mat grayToBGR(Mat blue, Mat green, Mat red){
     return out;
 }
 
-int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat completeIMG, Mat completeBoundary, vector<Vec4i> hierarchy, vector<vector<Point> > contours, list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                     list<int> skeletonPointSingleCountList, int i, int indx) {
-
-}
  void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> > metadata,
          list<int> branchList, int nucleusArea, int maskedZytoplasmn){
 
@@ -830,7 +824,7 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
      //check if file not exists and creates one with headlines
      if(!file.good()){
          ofstream csvFile(resultFileIUF);
-         csvFile << "Experiment ID ; " + toxin + " ; Well ; Sum neurite length ; Nucleus ; Average neurite length ; Sum branches complete skelett ; Sum nucleus area ; Average nucleus area ; Masked zytoplasmn\n";
+         csvFile << "Experiment ID ; " + toxin + " ; Well ; Sum neurite length ; Nucleus ; Relative neurite length ; Sum branches complete skelett ; Sum nucleus area ; Average nucleus area ; Masked zytoplasmn\n";
          csvFile.close();
      }
 
@@ -866,11 +860,15 @@ int generateSkeleton(Mat dist_8u, Mat completeContour, Mat completeSkeleton, Mat
              unmaskedConcentration = "Solvent control (SC)";
          }
      }
-
+     double averageNeuriteLenght = 0;
+     double averageNucleusArea = 0;
      string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
-
+     if (nucleus != 0){
+         averageNeuriteLenght = (skeletonPoints/4.4) / nucleus;
+         averageNucleusArea = (nucleusArea / nucleus);
+     }
      ofstream csvFile(resultFileIUF, ios::app);
-     csvFile << experiment << ";" << unmaskedConcentration << ";" << well << ";" << (skeletonPoints/4.4) << ";" << nucleus << ";" << (skeletonPoints/4.4) / nucleus << ";" << sumBranches << ";" << nucleusArea << ";" << (nucleusArea / nucleus) << ";" << maskedZytoplasmn <<"\n";
+     csvFile << experiment << ";" << unmaskedConcentration << ";" << well << ";" << (skeletonPoints/4.4) << ";" << nucleus << ";" << averageNeuriteLenght << ";" << sumBranches << ";" << nucleusArea << ";" << averageNucleusArea << ";" << maskedZytoplasmn <<"\n";
      csvFile.close();
 }
 

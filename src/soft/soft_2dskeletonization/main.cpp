@@ -533,7 +533,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         for (int i = 0; i <= contours.size(); i++) {
             if (hierarchy[i][3] == -1) {
                 double area = contourArea(contours[i]);
-                if ((area > 200)) {
+                if (area > 200) {
                     Mat singleContour = Mat::zeros(dist_8u.size(), CV_8UC3);
                     Scalar color(rand() & 255, rand() & 255, rand() & 255);
                     drawContours(singleContour, contours, (int) i, color, FILLED, 8, hierarchy);

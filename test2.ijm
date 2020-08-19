@@ -3,7 +3,7 @@ processFolder(inputDir);
 print("fertig");
 
 
-function processFile(input){
+function processAlexaFile(input){
 	open(input);
 	subStr = split(input, ".");
 
@@ -19,6 +19,21 @@ function processFile(input){
 	close();
 }
 
+function processDapiFile(input){
+	open(input);
+	subStr = split(input, ".");
+
+	getMinAndMax(min, max);
+	setMinAndMax(min, (max/2));
+	run("Apply LUT");
+	getMinAndMax(min, max);
+	setMinAndMax(min, (max/2));
+	run("Apply LUT");
+	run("8-bit");
+	saveAs("PNG", ".."+ subStr[0]);
+	close();
+}
+
 function processFolder(input){
 	list = getFileList(input);
 	for(i = 0; i < list.length; i++){
@@ -28,7 +43,12 @@ function processFolder(input){
 		}
 		if (endsWith(list[i], ".tif"))
 		{
-			processFile(input + list[i]);
+			if (matches(list[i], ".*Alexa.*")){
+				processAlexaFile(input + list[i]);
+			}
+			if (matches(list[i], ".*DAPI.*")){
+				processDapiFile(input + list[i]);
+			}
 		}
 	}
 }

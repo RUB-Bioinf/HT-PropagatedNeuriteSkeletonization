@@ -701,17 +701,17 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
         std::list<unsigned int> closest;
         auto y = grskelpropag->getNode<mathtools::geometry::euclidian::HyperSphere<2>>(x);
         auto z = y.getCenter().getCoords();
-        std::cout << z[0] << "/" << z[1] << ": ";
+//        std::cout << z[0] << "/" << z[1] << ": ";
         csvFile <<  z[0] << "," << z[1] << ";";
 
                   algorithm::skeletonization::propagation::closestInd(optiBnd, z, closest);
         for (auto w : closest){
             auto g = optiBnd[w];
-            std::cout << g.coords[0] << "/" << g.coords[1] << "; ";
+//            std::cout << g.coords[0] << "/" << g.coords[1] << "; ";
             csvFile <<  g.coords[0] << "," << g.coords[1] << "|";
         }
         csvFile << "; \n";
-        std::cout << std::endl;
+//        std::cout << std::endl;
     }
     csvFile.close();
 }

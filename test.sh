@@ -1,3 +1,4 @@
+echo "test123"
 cd ../ressources
 find . -type d -print0 >../dirs.txt
 cd ../output

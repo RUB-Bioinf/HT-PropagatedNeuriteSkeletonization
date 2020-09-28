@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
     auto str = oss.str();
     prefix = str;
     system("../test.sh");
-    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test3.ijm ../ressources/");
+    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test3.ijm ../resources/");
     resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
     vector <pair<string,string> >  metadata = inputMetadata();
-    int result = inputFolderGrabbing("../ressources", metadata);
+    int result = inputFolderGrabbing("../resources", metadata);
     cout << "fertig" <<endl;
     return result;
 }
@@ -235,7 +235,7 @@ vector <pair<string,string> > inputMetadata(){
     vector <pair<string,string> > maskedUnmasked;
     ifstream csvread;
 
-    csvread.open("../ressources/metadata.csv", ios::in);
+    csvread.open("../resources/metadata.csv", ios::in);
     int i = 0;
     if (csvread) {
         //Read complete file and cut at ';'
@@ -327,7 +327,7 @@ int inputValuesRead(int argc, char **argv) {
     desc.add_options()
             ("help", "Help message")
             ("imgfile",
-             boost::program_options::value<std::string>(&imgfile)->default_value("../ressources/" + inputImgDefault),
+             boost::program_options::value<std::string>(&imgfile)->default_value("../resources/" + inputImgDefault),
              "Greyscale image file with file extension")
             ("output", boost::program_options::value<bool>(&output)->default_value(outputDefault),
              "Returns output images")

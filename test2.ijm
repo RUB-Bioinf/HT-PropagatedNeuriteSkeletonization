@@ -18,7 +18,7 @@ function processAlexaFile(input){
 	run("Apply LUT");
 	run("8-bit");
 	run("Auto Local Threshold", "method=Phansalkar radius=35 parameter_1=0 parameter_2=0 white");
-	saveAs("PNG", "."+ subStr[0]);
+	saveAs("PNG", ".."+ subStr[0]);
 	close();
 }
 
@@ -35,7 +35,7 @@ function processDapiFile(input){
 	setMinAndMax(min, (max/2));
 	run("Apply LUT");
 	run("8-bit");
-	saveAs("PNG", "."+ subStr[0]);
+	saveAs("PNG", ".."+ subStr[0]);
 	close();
 }
 
@@ -45,14 +45,19 @@ function processFolder(input){
 	for(i = 0; i < list.length; i++){
 		if(File.isDirectory(input + list[i]))
 		{
+			print(input + list[i]);
+			print("8");
 			processFolder(input + list[i]);
 		}
 		if (endsWith(list[i], ".tif"))
 		{
 			if (matches(list[i], ".*Alexa.*")){
+				print(input + list[i]);
+				print("9");
 				processAlexaFile(input + list[i]);
 			}
 			if (matches(list[i], ".*DAPI.*")){
+				print(input + list[i]);
 				processDapiFile(input + list[i]);
 			}
 		}

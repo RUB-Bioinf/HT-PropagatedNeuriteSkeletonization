@@ -1,9 +1,12 @@
 inputDir = getArgument();
 processFolder(inputDir);
+print(inputDir);
 print("fertig");
 
 
 function processAlexaFile(input){
+	print("3);
+
 	open(input);
 	subStr = split(input, ".");
 
@@ -15,11 +18,13 @@ function processAlexaFile(input){
 	run("Apply LUT");
 	run("8-bit");
 	run("Auto Local Threshold", "method=Phansalkar radius=35 parameter_1=0 parameter_2=0 white");
-	saveAs("PNG", ".."+ subStr[0]);
+	saveAs("PNG", "."+ subStr[0]);
 	close();
 }
 
 function processDapiFile(input){
+	print("2");
+	
 	open(input);
 	subStr = split(input, ".");
 
@@ -30,11 +35,12 @@ function processDapiFile(input){
 	setMinAndMax(min, (max/2));
 	run("Apply LUT");
 	run("8-bit");
-	saveAs("PNG", ".."+ subStr[0]);
+	saveAs("PNG", "."+ subStr[0]);
 	close();
 }
 
 function processFolder(input){
+	print("1");
 	list = getFileList(input);
 	for(i = 0; i < list.length; i++){
 		if(File.isDirectory(input + list[i]))

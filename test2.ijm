@@ -5,7 +5,7 @@ print("fertig");
 
 
 function processAlexaFile(input){
-	print("3);
+	print("3");
 
 	open(input);
 	subStr = split(input, ".");

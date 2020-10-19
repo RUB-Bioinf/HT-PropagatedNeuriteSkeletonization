@@ -1,4 +1,4 @@
-cd ../ressources
+cd ../resources
 find . -type d -print0 >../dirs.txt
 cd ../output
 mkdir -p "$(date +"%d-%m-%Y")"

@@ -291,7 +291,9 @@ int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >
                     //picture data found
                     if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
                         imgfile = directoryName;
+                        cout << imgfile << endl;
                         imgfile.append("/" + dirName);
+                        cout << imgfile << endl;
                         Mat outClosing = simpleRead(metadata);
                     }
                     //directory found
@@ -302,6 +304,7 @@ int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >
                         int n = fullDirectoryName.length();
                         char char_array[n+1];
                         strcpy (char_array, fullDirectoryName.c_str());
+                        cout<<char_array<<endl;
                         const char *dirNeu = char_array;
                         inputFolderGrabbing(dirNeu, metadata);
                     }

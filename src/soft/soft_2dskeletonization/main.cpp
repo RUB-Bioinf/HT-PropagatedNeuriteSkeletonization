@@ -368,6 +368,8 @@ string setVariableFilenames(string filenameSuffix, int i) {
     string filename = first.substr(0, filenameLength - 4);	
     cout<<filename<<endl;
 
+    string generatedFilename;
+
     if (i == 0) {
         generatedFilename = "../output/" + prefix + "/" + filename + filenameSuffix;
     } else {

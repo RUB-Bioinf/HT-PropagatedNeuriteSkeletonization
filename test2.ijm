@@ -1,7 +1,7 @@
 inputDir = getArgument();
-processFolder(inputDir);
 print(inputDir);
-print("fertig");
+processFolder(inputDir);
+
 
 
 function processAlexaFile(input){
@@ -62,5 +62,6 @@ function processFolder(input){
 			}
 		}
 	}
+	print("fertig");
 }
 

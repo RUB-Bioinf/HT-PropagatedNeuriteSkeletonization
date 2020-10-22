@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
     }
     vector <pair<string,string> >  metadata = inputMetadata();
     int result = inputFolderGrabbing("../resources", metadata);
-    cout << "fertig" <<endl;
+    cout << "Programm fertig" <<endl;
     return result;
 }
 

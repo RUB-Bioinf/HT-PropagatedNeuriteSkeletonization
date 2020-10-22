@@ -62,6 +62,6 @@ function processFolder(input){
 			}
 		}
 	}
-	print("fertig");
+	print("ImageJ Vorverarbeitung fertig");
 }
 

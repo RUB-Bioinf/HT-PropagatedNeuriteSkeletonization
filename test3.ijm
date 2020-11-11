@@ -7,9 +7,6 @@ function processAlexaFile(input){
 	open(input);
 	subStr = split(input, ".");
 	
-	getMinAndMax(min, max);
-	setMinAndMax(min, (max/4));
-	run("Apply LUT");
 	run("8-bit");
 	run("Auto Local Threshold", "method=Phansalkar radius=75 parameter_1=0 parameter_2=0 white");
 	saveAs("PNG", ".."+ subStr[0]);

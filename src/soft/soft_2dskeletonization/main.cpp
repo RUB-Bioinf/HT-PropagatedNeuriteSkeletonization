@@ -361,7 +361,7 @@ int inputValuesRead(int argc, char **argv) {
 }
 
 string setVariableFilenames(string filenameSuffix, int i) {
-    string first = imgfile.substr(13);
+    string first = imgfile.substr(15);
     cout<<imgfile<<endl;  
 
     int filenameLength = first.length();	

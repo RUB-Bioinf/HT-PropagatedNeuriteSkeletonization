@@ -221,9 +221,11 @@ int main(int argc, char **argv) {
     inputValuesRead(argc, argv);
 
     if (variableOutputNames) {
+        cout << 224 <<endl;
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
     vector <pair<string,string> >  metadata = inputMetadata();
+    cout << 228 <<endl;
     int result = inputFolderGrabbing("../resources", metadata);
     cout << "Programm fertig" <<endl;
     return result;
@@ -280,16 +282,24 @@ string replaceSubstring(string str){
 }
 
 int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >  metadata){
+    cout << 284 <<endl;
     DIR *dir;
+    cout << 287<<endl;
     struct dirent *ent;
+    cout << 289 <<endl;
     string dirName;
+    cout << 291 <<endl;
     if ( openDirectory == true) {
         if ((dir = opendir(directoryName)) != NULL) {
+            cout << 294 <<endl;
             while ((ent = readdir(dir))) {
+                cout << 296 <<endl;
                 dirName = ent->d_name;
+                cout << 298 <<endl;
                 if (dirName != "." && dirName != ".." && dirName != ".git") {
                     //picture data found
-                    if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
+                  cout << 301 <<endl;  
+                  if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
                         imgfile = directoryName;
                         cout << imgfile << endl;
                         imgfile.append("/" + dirName);

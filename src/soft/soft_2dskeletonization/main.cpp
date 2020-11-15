@@ -222,8 +222,11 @@ int main(int argc, char **argv) {
 
     if (variableOutputNames) {
         cout << 224 <<endl;
+        cout << filenameEnding <<endl;
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
+        cout << 226 <<endl;
     }
+    cout << 229 <<endl;
     vector <pair<string,string> >  metadata = inputMetadata();
     cout << 228 <<endl;
     int result = inputFolderGrabbing("../resources", metadata);
@@ -371,7 +374,8 @@ int inputValuesRead(int argc, char **argv) {
 }
 
 string setVariableFilenames(string filenameSuffix, int i) {
-    string first = imgfile.substr(11);
+    cout << 375 <<endl;
+    string first = imgfile.substr(13);
     cout<<imgfile<<endl;  
 
     int filenameLength = first.length();	

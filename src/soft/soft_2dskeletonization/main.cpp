@@ -263,6 +263,7 @@ vector <pair<string,string> > inputMetadata(){
                 cout << 263 <<endl;
                 vector<string> v = split(s, ";");
                 cout << 265 <<endl;
+                cout << s <<endl;
                 masked = v[0];
                 unmasked = v[1];
                 data = make_pair(masked,unmasked);

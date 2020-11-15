@@ -237,21 +237,32 @@ int main(int argc, char **argv) {
 vector <pair<string,string> > inputMetadata(){
     //get number of lines
     pair <string, string> data;
+    cout << 240 <<endl;
     vector <pair<string,string> > maskedUnmasked;
+    cout << 242 <<endl;
     ifstream csvread;
+    cout << 244 <<endl;
 
     csvread.open("../resources/metadata.csv", ios::in);
+    cout << 247 <<endl;
     int i = 0;
+    cout << 249 <<endl;
     if (csvread) {
+        cout << 251 <<endl;
         //Read complete file and cut at ';'
         string s = "";
+        cout << 254 <<endl;
         string masked = "";
         string unmasked = "";
         while (getline(csvread, s, '\n'))
         {
+            cout << 259 <<endl;
             size_t index = s.find(";");
+            cout << 261 <<endl;
             if (index != std::string::npos){
+                cout << 263 <<endl;
                 vector<string> v = split(s, ";");
+                cout << 265 <<endl;
                 masked = v[0];
                 unmasked = v[1];
                 data = make_pair(masked,unmasked);

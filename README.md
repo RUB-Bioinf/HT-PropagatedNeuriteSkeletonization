@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.com/Ibujah/compactskel.svg?branch=master)](https://travis-ci.com/Ibujah/compactskel)
 
 # A Propagated Skeleton Approach to High ThroughputScreening of Neurite Outgrowth forin vitro Parkinson’s Disease Modelling
 ![Pipeline example scheme](/example/pipeline_scheme_example.png?raw=true "Pipeline example scheme")

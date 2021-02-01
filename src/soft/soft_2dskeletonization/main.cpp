@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
     auto str = oss.str();
     prefix = str;
     system("../test.sh");
-    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../frida.ijm ../resources/");
+    system(" /bph/puredata4/bioinfdata/work/HT-PropagatedNeuriteSkeletonization/S-Modul-Data/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../frida.ijm ../resources/");
     resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 

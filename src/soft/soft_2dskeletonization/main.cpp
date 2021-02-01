@@ -215,8 +215,8 @@ int main(int argc, char **argv) {
     oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
     auto str = oss.str();
     prefix = str;
-    //system("../test.sh");
-    system(" /bph/puredata4/bioinfdata/work/HT-PropagatedNeuriteSkeletonization/S-Modul-Data/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../frida.ijm ../resources/");
+    system("../test.sh");
+    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test3.ijm ../resources/");
     resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 

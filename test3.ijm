@@ -5,16 +5,19 @@ print("Finished ImageJ Preprocessing");
 
 
 function processAlexaFile(input){
+	print("ImageJ Processing an unknwon Alexa File");
 	open(input);
 	subStr = split(input, ".");
 	
 	run("8-bit");
 	run("Auto Local Threshold", "method=Phansalkar radius=75 parameter_1=0 parameter_2=0 white");
+	print("ImageJ Finished Processing an unknwon Alexa File. Saving.");
 	saveAs("PNG", ".."+ subStr[0]);
 	close();
 }
 
 function processDapiFile(input){
+	print("ImageJ Processing an unknwon Dapi File");
 	open(input);
 	subStr = split(input, ".");
 
@@ -25,6 +28,7 @@ function processDapiFile(input){
 	setMinAndMax(min, (max/2));
 	run("Apply LUT");
 	run("8-bit");
+	print("ImageJ Finished Processing an unknwon Dapi File. Saving.");
 	saveAs("PNG", ".."+ subStr[0]);
 	close();
 }

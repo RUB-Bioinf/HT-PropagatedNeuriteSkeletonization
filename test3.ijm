@@ -1,6 +1,7 @@
 inputDir = getArgument();
+print("Starting ImageJ Preprocessing");
 processFolder(inputDir);
-print("ImageJ fertig");
+print("Finished ImageJ Preprocessing");
 
 
 function processAlexaFile(input){

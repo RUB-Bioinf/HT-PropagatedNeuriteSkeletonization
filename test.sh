@@ -1,4 +1,5 @@
 echo Running test-sh
+whoami
 chmod +x ../resources
 chmod +x ../output
 cd ../resources

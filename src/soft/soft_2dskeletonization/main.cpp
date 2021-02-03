@@ -71,9 +71,9 @@ bool variableOutputNamesDefault = true;
 bool openDirectory = true;
 
 
-//Declaration globale values
+//Declaration global values
 std::string imgfile, skeletonImgName, prefix, resultFilename, toxin;
-bool output = false;
+bool output = true;
 double epsilon;
 bool variableOutputNames;
 
@@ -464,6 +464,7 @@ Mat generateCompleteImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     if (output && i == 0) {
         string filename = setVariableFilenames("-skeleton.png", i);
         imwrite(filename, image);
+        cout << "Writing 'Complete' skeleton image to disc" << endl;
     }
     return image;
 }
@@ -476,6 +477,7 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
     string filename = setVariableFilenames("-SkeletonImg.png", i);
     if (i == 0) {
         imwrite(filename, inputImage);
+        cout << "Writing skeleton image to disc" << endl;
     }
     return inputImage;
 }
@@ -488,6 +490,7 @@ Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     string filename = setVariableFilenames(filenameSuffix, i);
     if (i == 0) {
         imwrite(filename, image);
+        cout << "Writing boundary image to disc" << endl;
     }
     return image;
 }

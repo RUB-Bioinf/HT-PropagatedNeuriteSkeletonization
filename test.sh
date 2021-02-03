@@ -11,6 +11,6 @@ cd "$(date +"%d-%m-%Y")"
 mkdir -p "$(date "+%H-%M")"
 cd "$(date "+%H-%M")"
 xargs -0 mkdir -p < /out-tree/dirs.txt
-rm ../../../dirs.txt
+rm /out-tree/dirs.txt
 echo finished running test-sh!
 sleep 5

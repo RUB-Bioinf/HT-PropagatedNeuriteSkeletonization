@@ -1,5 +1,8 @@
-echo running test-sh!
+echo Running test-sh
 sleep 5
+whoami
+chmod +x ../resources
+chmod +x ../output
 cd ../resources
 find . -type d -print0 >../dirs.txt
 cd ../output

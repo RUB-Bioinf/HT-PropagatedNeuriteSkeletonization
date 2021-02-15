@@ -535,7 +535,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 
     //imwrite("Binary_image.png", bw);
     resize(bw, bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);
-    Mat element = getStructuringElement(cv::MORPH_CROSS,Size(7,7),Point(-1,-1));
+    Mat element = getStructuringElement(cv::MORPH_CROSS,Size(9,9),Point(-1,-1));
     morphologyEx(bw, bw, MORPH_CLOSE, element);
     imwrite("../output/Mopho_Output.png", bw);
 

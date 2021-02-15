@@ -630,7 +630,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterskaliert) / Zellkerne ; \n";
+            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte herunterskaliert ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterskaliert) / Zellkerne ; Skelettpunkte ohne Zytoplasma (herunterskaliert) / Zellkerne ; \n";
             csvFile.close();
         }
         //
@@ -767,6 +767,11 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     }
     double avgDistances = sumDistances / distanceList.size();
     string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
+  
+    float skelfaktor_wholeSkeleton = (skeletonPointSingleCountList / 4.4);
+    string skelfaktor_wholeSkeletonStr = changePointToComma(skelfaktor_wholeSkeleton);
+    float skelNucleus_wholeSkeleton = skelfaktor_wholeSkeleton / countNucleus;
+    string skelNucleus_wholeSkeletonStr = changePointToComma(skelNucleus_wholeSkeleton);
 
     float skelfaktor = (skelPointsDist / 4.4);
     string skelfaktorStr = changePointToComma(skelfaktor);
@@ -775,8 +780,8 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
-    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints
-    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleusfaktorStr << "\n";
+    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints ";" << skelfaktor_wholeSkeletonStr
+    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleus_wholeSkeletonStr ";" << skelNucleusfaktorStr <<  "\n";
     csvFile.close();
 }
 

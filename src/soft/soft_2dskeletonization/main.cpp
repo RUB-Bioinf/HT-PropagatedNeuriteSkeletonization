@@ -190,7 +190,7 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
 void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  metadata);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int SkeletonPointsDist, int countNucleus,
+                        list<int> skeletonPointSingleCountList, int SkeletonPoints, int SkeletonPointsDist, int countNucleus,
                         string filenameSuffix);
 
 Mat compareDistAndDapiFile(Mat dist, Mat dapi);
@@ -740,7 +740,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int skelPointsDist, int countNucleus,  string filenameSuffix) {
+                        list<int> skeletonPointSingleCountList, int skelPoints, int skelPointsDist, int countNucleus,  string filenameSuffix) {
     list<int>::iterator itNodes = nodeList.begin();
     list<int>::iterator itBranches = branchList.begin();
     list<double>::iterator itDistances = distanceList.begin();
@@ -768,7 +768,7 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     double avgDistances = sumDistances / distanceList.size();
     string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
   
-    float skelfaktor_wholeSkeleton = (skeletonPointSingleCountList / 4.4);
+    float skelfaktor_wholeSkeleton = (sumSkelPoints / 4.4);
     string skelfaktor_wholeSkeletonStr = changePointToComma(skelfaktor_wholeSkeleton);
     float skelNucleus_wholeSkeleton = skelfaktor_wholeSkeleton / countNucleus;
     string skelNucleus_wholeSkeletonStr = changePointToComma(skelNucleus_wholeSkeleton);

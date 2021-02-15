@@ -780,8 +780,8 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
-    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints ";" << skelfaktor_wholeSkeletonStr
-    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleus_wholeSkeletonStr ";" << skelNucleusfaktorStr <<  "\n";
+    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints << ";" << skelfaktor_wholeSkeletonStr
+    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleus_wholeSkeletonStr << ";" << skelNucleusfaktorStr <<  "\n";
     csvFile.close();
 }
 

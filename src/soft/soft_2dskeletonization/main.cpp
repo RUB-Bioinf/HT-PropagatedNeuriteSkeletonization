@@ -190,7 +190,7 @@ generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::D
 void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  metadata);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int skelPoints, int SkeletonPointsDist, int countNucleus,
+                        list<int> skeletonPointSingleCountList, int SkeletonPointsDist, int countNucleus,
                         string filenameSuffix);
 
 Mat compareDistAndDapiFile(Mat dist, Mat dapi);
@@ -740,7 +740,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int skelPoints, int skelPointsDist, int countNucleus,  string filenameSuffix) {
+                        list<int> skeletonPointSingleCountList, int skelPointsDist, int countNucleus,  string filenameSuffix) {
     list<int>::iterator itNodes = nodeList.begin();
     list<int>::iterator itBranches = branchList.begin();
     list<double>::iterator itDistances = distanceList.begin();

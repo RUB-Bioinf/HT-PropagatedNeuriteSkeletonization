@@ -21,12 +21,6 @@ function processDapiFile(input){
 	open(input);
 	subStr = split(input, ".");
 
-	getMinAndMax(min, max);
-	setMinAndMax(min, (max/2));
-	run("Apply LUT");
-	getMinAndMax(min, max);
-	setMinAndMax(min, (max/2));
-	run("Apply LUT");
 	run("8-bit");
 	print("ImageJ Finished Processing an unknwon Dapi File. Saving.");
 	saveAs("PNG", ".."+ subStr[0]);

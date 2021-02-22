@@ -534,8 +534,8 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
 
     //imwrite("Binary_image.png", bw);
-    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);
-    Mat element = getStructuringElement(cv::MORPH_CROSS,Size(8,8),Point(-1,-1));
+    resize(bw, bw, Size(bw.cols * 4, bw.rows * 4),0,0,INTER_NEAREST);
+    Mat element = getStructuringElement(cv::MORPH_CROSS,Size(9,9),Point(-1,-1));
     morphologyEx(bw, bw, MORPH_CLOSE, element);
     imwrite("../output/Mopho_Output.png", bw);
 
@@ -660,7 +660,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 
         Mat dist_8u_dapi;
         cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
-        resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3),0,0,INTER_NEAREST);
+        resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 4, dist_8u_dapi.rows * 4),0,0,INTER_NEAREST);
         Mat thres_dapi;
         threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
         thres_dapi.convertTo(thres_dapi, CV_8UC1);
@@ -701,7 +701,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
     threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
     imwrite("DapiThresNeu.png", thres_dapi);
 
-    resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3),0,0,INTER_NEAREST);
+    resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 4, dist_8u_dapi.rows * 4),0,0,INTER_NEAREST);
     Mat resultArr = Mat::zeros(dist_8u.size(), CV_8UC1);
 
     if (dist_8u.rows == thres_dapi.rows && dist_8u.cols == thres_dapi.cols){

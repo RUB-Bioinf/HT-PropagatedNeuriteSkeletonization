@@ -546,7 +546,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     filter2D(srcDAPI, imgLaplacian_DAPI, CV_32F, kernel);
     Mat sharp_DAPI;
     srcDAPI.convertTo(sharp_DAPI, CV_32F);
-    Mat imgResult_DAPI = sharp - imgLaplacian;
+    Mat imgResult_DAPI = sharp_DAPI - imgResult_DAPI;
   
     cvtColor(imgResult_DAPI, DAPI_bw, COLOR_BGR2GRAY);
     threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);

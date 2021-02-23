@@ -547,7 +547,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
     threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
   
-    resize(DAPI_bw, DAPI_bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);
+    resize(DAPI_bw, DAPI_bw, Size(DAPI_bw.cols * 3, DAPI_bw.rows * 3),0,0,INTER_NEAREST);
     Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
     morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
   

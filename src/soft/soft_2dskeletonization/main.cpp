@@ -540,11 +540,11 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
    
   
     //Morphological Closing for Dapi file 
+    Mat DAPI_bw, bw_merged;
   
     srcDAPI.convertTo(DAPI_bw, CV_8UC3);
   
-    Mat DAPI_bw, bw_merged;
-    cvtColor(srcDAPI, DAPI_bw, COLOR_BGR2GRAY);
+    cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
     threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
   
     resize(DAPI_bw, DAPI_bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);

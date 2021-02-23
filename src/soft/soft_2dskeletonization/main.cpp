@@ -541,9 +541,9 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
   
     //Morphological Closing for Dapi file 
     Mat DAPI_bw, bw_merged;
-  
+    Mat kernel_DAPI = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
     Mat imgLaplacian_DAPI;
-    filter2D(srcDAPI, imgLaplacian_DAPI, CV_32F, kernel);
+    filter2D(srcDAPI, imgLaplacian_DAPI, CV_32F, kernel_DAPI);
     Mat sharp_DAPI;
     srcDAPI.convertTo(sharp_DAPI, CV_32F);
     Mat imgResult_DAPI = sharp_DAPI - imgResult_DAPI;

@@ -562,9 +562,9 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 
     // create CV_8U of distance image, needed for find conturs
     Mat dist_8u;
-    bw.convertTo(dist_8u, CV_8U);
+    bw_merged.convertTo(dist_8u, CV_8U);
 
-    Mat dist = distanceTransformAlexa(bw);
+    Mat dist = distanceTransformAlexa(bw_merged);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     findContours(dist_8u, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);

@@ -541,7 +541,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
   
     //Morphological Closing for Dapi file 
   
-    Mat DAPI_bw, Mat srcDAPI, element_DAPI;
+    Mat DAPI_bw, element_DAPI, bw_merged;
     cvtColor(srcDAPI, DAPI_bw, COLOR_BGR2GRAY);
     threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
   

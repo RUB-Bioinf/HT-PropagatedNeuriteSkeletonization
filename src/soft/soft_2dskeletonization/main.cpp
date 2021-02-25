@@ -551,8 +551,6 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
     morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
   
-    Mat kernel_cross = (Mat_<uchar>(5,5) << 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, CV_8U);
-  
     //Merge and Save
   
     add(bw, DAPI_bw, bw_merged);

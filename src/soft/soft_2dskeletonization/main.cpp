@@ -692,15 +692,15 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter,metadata, branchList,
                 dapiArea, maskedZytoplasmn);
 
-        Mat multiChannel = grayToBGR(thres_dapi, bw, result);
+        Mat multiChannel = grayToBGR(thres_dapi, bw_merged, result);
 
-        Mat multiChannel2 = grayToBGR(result, bw, thres_dapi);
+        Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
         string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
         imwrite(filenameMultiChannelResult2, multiChannel2);
         string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
         imwrite(filenameMultiChannelResult, multiChannel);
 
-        Mat multiChannel3 = grayToBGR(bw, thres_dapi, result);
+        Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
         string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
         imwrite(filenameMultiChannelResult3, multiChannel3);
     } else {

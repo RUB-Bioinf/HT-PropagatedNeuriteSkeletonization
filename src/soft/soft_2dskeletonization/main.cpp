@@ -69,6 +69,7 @@ double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
 bool openDirectory = true;
+bool applyClosingToDapi = true;
 
 
 //Declaration global values
@@ -535,15 +536,40 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 
     //imwrite("Binary_image.png", bw);
     resize(bw, bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);
-    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(-1,-1));
+    Mat element = getStructuringElement(cv::MORPH_CROSS,Size(7,7),Point(-1,-1));
     morphologyEx(bw, bw, MORPH_CLOSE, element);
-    imwrite("../output/Mopho_Output.png", bw);
+   
+  
+    //Morphological Closing for Dapi file 
+	Mat DAPI_bw, bw_merged;
+	if (applyClosingToDapi == true){
+		srcDAPI.convertTo(DAPI_bw, CV_8UC3);
+		cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
+		threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
+  
+		resize(DAPI_bw, DAPI_bw, Size(DAPI_bw.cols * 3, DAPI_bw.rows * 3),0,0,INTER_NEAREST);
+		Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
+		morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
+
+  
+		//Merge and Save
+		add(bw, DAPI_bw, bw_merged);
+	}else{
+		bw_merged = bw;
+	}
+  
+    // Closing with inverted CROSS structuring element
+	// See S-Modul Report from Frida for details and documentation on this
+    Mat kernel_inverted_cross = (Mat_<uchar>(5,5) << 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, CV_8U);
+    morphologyEx(bw_merged, bw_merged, MORPH_CLOSE, kernel_inverted_cross);
+  
+    imwrite("../output/Mopho_Output.png", bw_merged);
 
     // create CV_8U of distance image, needed for find conturs
     Mat dist_8u;
-    bw.convertTo(dist_8u, CV_8U);
+    bw_merged.convertTo(dist_8u, CV_8U);
 
-    Mat dist = distanceTransformAlexa(bw);
+    Mat dist = distanceTransformAlexa(bw_merged);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     findContours(dist_8u, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
@@ -630,9 +656,10 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte herunterskaliert ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterskaliert) / Zellkerne ; Skelettpunkte ohne Zytoplasma (herunterskaliert) / Zellkerne ; \n";
+            csvFile << "Dateiname;Anzahl Nodes;Anzahl Branches;Hausdorff Distance (px);Berechnungszeit (ms);Skelettpunkte Algorithmus;Skelettpunkte herunterskaliert;Skelettpunkte ohne DistanceTranform;Skelettpunkte ohne DistanceTranform herunterskaliert;Anzahl Zellkerne;Skelettpunkte (herunterskaliert) / Zellkerne;Skelettpunkte ohne Zytoplasma (herunterskaliert) / Zellkerne;\n";
             csvFile.close();
         }
+		
         //
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();
@@ -670,15 +697,15 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter,metadata, branchList,
                 dapiArea, maskedZytoplasmn);
 
-        Mat multiChannel = grayToBGR(thres_dapi, bw, result);
+        Mat multiChannel = grayToBGR(thres_dapi, bw_merged, result);
 
-        Mat multiChannel2 = grayToBGR(result, bw, thres_dapi);
+        Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
         string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
         imwrite(filenameMultiChannelResult2, multiChannel2);
         string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
         imwrite(filenameMultiChannelResult, multiChannel);
 
-        Mat multiChannel3 = grayToBGR(bw, thres_dapi, result);
+        Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
         string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
         imwrite(filenameMultiChannelResult3, multiChannel3);
     } else {

@@ -20,7 +20,7 @@ function processDapiFile(input){
 	print("ImageJ Processing an unknwon Dapi File");
 	open(input);
 	subStr = split(input, ".");
-
+	
 	getMinAndMax(min, max);
 	setMinAndMax(min, (max/2));
 	run("Apply LUT");

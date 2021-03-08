@@ -69,6 +69,7 @@ double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
 bool openDirectory = true;
+bool applyClosingToDapi = true;
 
 
 //Declaration global values
@@ -540,22 +541,25 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
    
   
     //Morphological Closing for Dapi file 
+	Mat DAPI_bw, bw_merged;
+	if (applyClosingToDapi == true){
+		srcDAPI.convertTo(DAPI_bw, CV_8UC3);
+		cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
+		threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
   
-    Mat DAPI_bw, bw_merged;
+		resize(DAPI_bw, DAPI_bw, Size(DAPI_bw.cols * 3, DAPI_bw.rows * 3),0,0,INTER_NEAREST);
+		Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
+		morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
+
   
-    srcDAPI.convertTo(DAPI_bw, CV_8UC3);
-    cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
-    threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
-  
-    resize(DAPI_bw, DAPI_bw, Size(DAPI_bw.cols * 3, DAPI_bw.rows * 3),0,0,INTER_NEAREST);
-    Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
-    morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
-  
-    //Merge and Save
-  
-    add(bw, DAPI_bw, bw_merged);
+		//Merge and Save
+		add(bw, DAPI_bw, bw_merged);
+	}else{
+		bw_merged = bw;
+	}
   
     // Closing with inverted CROSS structuring element
+	// See S-Modul Report from Frida for details and documentation on this
     Mat kernel_inverted_cross = (Mat_<uchar>(5,5) << 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, CV_8U);
     morphologyEx(bw_merged, bw_merged, MORPH_CLOSE, kernel_inverted_cross);
   
@@ -652,9 +656,10 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte herunterskaliert ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterskaliert) / Zellkerne ; Skelettpunkte ohne Zytoplasma (herunterskaliert) / Zellkerne ; \n";
+            csvFile << "Dateiname;Anzahl Nodes;Anzahl Branches;Hausdorff Distance (px);Berechnungszeit (ms);Skelettpunkte Algorithmus;Skelettpunkte herunterskaliert;Skelettpunkte ohne DistanceTranform;Skelettpunkte ohne DistanceTranform herunterskaliert;Anzahl Zellkerne;Skelettpunkte (herunterskaliert) / Zellkerne;Skelettpunkte ohne Zytoplasma (herunterskaliert) / Zellkerne;\n";
             csvFile.close();
         }
+		
         //
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();

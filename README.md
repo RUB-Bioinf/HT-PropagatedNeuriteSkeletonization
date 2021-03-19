@@ -2,6 +2,8 @@
 # A Propagated Skeleton Approach to High ThroughputScreening of Neurite Outgrowth forin vitro Parkinson’s Disease Modelling
 ![Pipeline example scheme](/example/pipeline_scheme_example.png?raw=true "Pipeline example scheme")
 
+Scale Bar = 500 μm.
+
 ****
 
 Neuronal *in vitro* models of neurodegenerative diseases such as *Parkinson’s Disease* are extensively studied in pathological and therapeutical research with neurite outgrowth being a core feature.

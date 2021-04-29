@@ -332,16 +332,27 @@ tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr diss
     double res = algorithm::evaluation::SymDiffArea(dissh, shp);
     double res2 = algorithm::evaluation::HausDist(skel, disbnd, dissh->getFrame());
 
+    ofstream exp;
+    string fileNameDegreeOut = "../output/"+prefix+"nodeDegrees.csv";
+    exp.open(fileNameDegreeOut);
+
     list<unsigned int> lnod;
     skel->getAllNodes(lnod);
     unsigned int nbbr = 0;
+    unsigned int currentNodeID = 0;
     for (std::list<unsigned int>::iterator it = lnod.begin(); it != lnod.end(); it++) {
         unsigned int deg = skel->getNodeDegree(*it);
         if (deg != 2)
             nbbr += deg;
+
+        exp << currentNodeID << ";" << deg << ";" << "\n";
+        currentNodeID = currentNodeID+1;
     }
     nbbr /= 2;
     tuple<double, double, int, int> result = std::make_tuple(res * 100.0, res2, skel->getNbNodes(), nbbr);
+
+    exp.flush();
+    exp.close();
 
     return result;
 }

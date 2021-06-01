@@ -718,8 +718,8 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
 //        std::cout << z[0] << "/" << z[1] << ": ";
         csvFile <<  z[0] << "," << z[1] << ";";
       
-      unsigned int deg = grskelpropag->getNodeDegree(x);
-      csvfile << deg << ";";
+        unsigned int deg = grskelpropag->getNodeDegree(x);
+        csvFile << deg << ";";
 
                   algorithm::skeletonization::propagation::closestInd(optiBnd, z, closest);
         for (auto w : closest){

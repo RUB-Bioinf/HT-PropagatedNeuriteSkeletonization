@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
     auto tm = *std::localtime(&t);
 
     std::ostringstream oss;
-    oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
+    oss << std::put_time(&tm, "%d-%m-%Y/%H-%M");
     auto str = oss.str();
     prefix = str;
     system("../test.sh");
@@ -180,6 +180,9 @@ int main(int argc, char **argv) {
     }
 
     int result = inputFolderGrabbing("../ressources");
+  
+    system("chmod -R 777 ../output");
+  
     cout << "fertig" <<endl;
     return result;
 }
@@ -715,8 +718,8 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
 //        std::cout << z[0] << "/" << z[1] << ": ";
         csvFile <<  z[0] << "," << z[1] << ";";
       
-      //unsigned int deg = grskelpropag->getNodeDegree(x);
-      //csvfile << deg << ";";
+      unsigned int deg = grskelpropag->getNodeDegree(x);
+      csvfile << deg << ";";
 
                   algorithm::skeletonization::propagation::closestInd(optiBnd, z, closest);
         for (auto w : closest){

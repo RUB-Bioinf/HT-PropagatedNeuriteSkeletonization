@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
     auto tm = *std::localtime(&t);
 
     std::ostringstream oss;
-    oss << std::put_time(&tm, "%d-%m-%Y/%H-%M");
+    oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
     auto str = oss.str();
     prefix = str;
     system("../test.sh");
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 
     int result = inputFolderGrabbing("../ressources");
   
-    //system("chmod -R 777 ../output");
+    system("chmod -R 777 ../output");
   
     cout << "fertig" <<endl;
     return result;

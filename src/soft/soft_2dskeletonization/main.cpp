@@ -730,6 +730,7 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
         for (auto ind : nbr){
               csvFile << ind << ",";
         }
+        csvFile << ";";
 
                   algorithm::skeletonization::propagation::closestInd(optiBnd, z, closest);
         for (auto w : closest){

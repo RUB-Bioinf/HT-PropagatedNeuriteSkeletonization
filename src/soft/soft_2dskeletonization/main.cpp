@@ -717,7 +717,7 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
         auto y = grskelpropag->getNode<mathtools::geometry::euclidian::HyperSphere<2>>(x);
         auto z = y.getCenter().getCoords();
 //        std::cout << z[0] << "/" << z[1] << ": ";
-        csvFile << x << ";"
+        csvFile << x << ";";
         csvFile <<  z[0] << "," << z[1] << ";";
         
         

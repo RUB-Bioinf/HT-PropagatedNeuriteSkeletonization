@@ -335,9 +335,9 @@ tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr diss
     double res = algorithm::evaluation::SymDiffArea(dissh, shp);
     double res2 = algorithm::evaluation::HausDist(skel, disbnd, dissh->getFrame());
 
-    ofstream exp;
-    string fileNameDegreeOut = "../output/"+prefix+"nodeDegrees.csv";
-    exp.open(fileNameDegreeOut);
+    //ofstream exp;
+    //string fileNameDegreeOut = "../output/"+prefix+"nodeDegrees.csv";
+    //exp.open(fileNameDegreeOut);
 
     list<unsigned int> lnod;
     skel->getAllNodes(lnod);
@@ -616,7 +616,7 @@ void splitContours(Mat src) {
                     generateBoundaryImage(completeBoundary, dissh, disbnd, 0);
 
                     auto boundaryPointList = getListFromPicture(boundaryImg);
-                    writeCSVData(boundaryPointList, "-boundaryData.csv", indx);
+                    writeCSVData(boundaryPointList, "-boundarypoints.csv", indx);
 
 
                     vector<pair<int, int>> skelPointsList = getAllImageCoordinates(skeletonImg);
@@ -629,6 +629,7 @@ void splitContours(Mat src) {
                            // std::cout << "found: " << f.first << "|" << f.second << std::endl;
                         }
                     }
+                    /*
                     ofstream exp;
                     string filenameContractSet = "../output/" + prefix + "/contractSet.csv";
                     exp.open(filenameContractSet);
@@ -648,11 +649,11 @@ void splitContours(Mat src) {
 
                     }
                     exp.flush();
-                    exp.close();
+                    exp.close();*/
                     vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
                     SparseMat newMat(skeletonImg);
                     int SkeletonPointsCounter = newMat.nzcount();
-                    writeCSVData(skelPointsList, "-skeletonData.csv", indx);
+                    writeCSVData(skelPointsList, "-skeletonpoints.csv", indx);
                     //consoleOutputSingleData(respropag, t0, SkeletonPointsCounter);
 
                     nodeList.push_back(get<2>(respropag));
@@ -661,7 +662,7 @@ void splitContours(Mat src) {
                     timeList.push_back(t0);
                     skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
                     writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
-                                       "-skeletonData.csv");
+                                       "-generalData.csv");
                     getClosestInd(grskelpropag, disbnd);
                     indx++;
                 }
@@ -709,17 +710,26 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
     std::list<unsigned int> lind;
     grskelpropag->getAllNodes(lind);
 
-    string csvFilename = setVariableFilenames("closestInds.csv", 0);
+    string csvFilename = setVariableFilenames("skeletondata.csv", 0);
     ofstream csvFile(csvFilename);
     for (auto x : lind) {
         std::list<unsigned int> closest;
         auto y = grskelpropag->getNode<mathtools::geometry::euclidian::HyperSphere<2>>(x);
         auto z = y.getCenter().getCoords();
 //        std::cout << z[0] << "/" << z[1] << ": ";
+        csvFile << x << ";"
         csvFile <<  z[0] << "," << z[1] << ";";
-      
+        
+        
         unsigned int deg = grskelpropag->getNodeDegree(x);
         csvFile << deg << ";";
+      
+        list<unsigned int> nbr;
+        grskelpropag->getNeighbors(x,nbr);
+      
+        for (auto ind : nbr){
+              csvFile << ind << ",";
+        }
 
                   algorithm::skeletonization::propagation::closestInd(optiBnd, z, closest);
         for (auto w : closest){

@@ -348,14 +348,14 @@ tuple<double, double, int, int> EvalSkel(const shape::DiscreteShape<2>::Ptr diss
         if (deg != 2)
             nbbr += deg;
 
-        exp << currentNodeID << ";" << deg << ";" << "\n";
-        currentNodeID = currentNodeID+1;
+        //exp << currentNodeID << ";" << deg << ";" << "\n";
+        //currentNodeID = currentNodeID+1;
     }
     nbbr /= 2;
     tuple<double, double, int, int> result = std::make_tuple(res * 100.0, res2, skel->getNbNodes(), nbbr);
 
-    exp.flush();
-    exp.close();
+    //exp.flush();
+    //exp.close();
 
     return result;
 }
@@ -629,7 +629,7 @@ void splitContours(Mat src) {
                            // std::cout << "found: " << f.first << "|" << f.second << std::endl;
                         }
                     }
-                    /*
+                    
                     ofstream exp;
                     string filenameContractSet = "../output/" + prefix + "/contractSet.csv";
                     exp.open(filenameContractSet);
@@ -649,7 +649,7 @@ void splitContours(Mat src) {
 
                     }
                     exp.flush();
-                    exp.close();*/
+                    exp.close();
                     vector<pair<int, int>> boundaryPointsList = getAllImageCoordinates(boundaryImg);
                     SparseMat newMat(skeletonImg);
                     int SkeletonPointsCounter = newMat.nzcount();

@@ -408,7 +408,14 @@ cv::Mat simpleRead() {
     if (matAlexaFile.empty()) {
         throw logic_error("Wrong input data...");
     }
+    try
+    {
     splitContours(matAlexaFile);
+    }
+    catch(...)
+    {
+      //no nothing
+    }
     return matAlexaFile;
 }
 

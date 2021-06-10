@@ -669,7 +669,7 @@ void splitContours(Mat src) {
                     timeList.push_back(t0);
                     skeletonPointSingleCountList.push_back(SkeletonPointsCounter);
                     writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
-                                       "-generalData.csv");
+                                       "_generalData.csv");
                     getClosestInd(grskelpropag, disbnd);
                     indx++;
                 }
@@ -716,8 +716,10 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
     createOptiBnd(disbnd, optiBnd, optiUsedBnd);
     std::list<unsigned int> lind;
     grskelpropag->getAllNodes(lind);
-
-    string csvFilename = setVariableFilenames("skeletondata.csv", 0);
+  
+    writeCSVData(optiBnd, "_optiboundary.csv", 0);
+    
+    string csvFilename = setVariableFilenames("_skeletondata.csv", 0);
     ofstream csvFile(csvFilename);
     for (auto x : lind) {
         std::list<unsigned int> closest;

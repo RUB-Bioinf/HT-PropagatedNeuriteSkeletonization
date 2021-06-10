@@ -715,7 +715,7 @@ void getOptBnd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Discrete
     createOptiBnd(disbnd, optiBnd, optiUsedBnd);
   
     //writeCSVData(optiBnd, "_optiboundary.csv", 0);
-    string csvFilename = setVariableFilenames("_optboundary.cvs", 0);
+    string csvFilename = setVariableFilenames("_optboundary.csv", 0);
     ofstream csvFile(csvFilename);
     for(unsigned int i = 0; i < optiBnd.size(); i++) 
     {

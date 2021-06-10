@@ -717,8 +717,14 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
     std::list<unsigned int> lind;
     grskelpropag->getAllNodes(lind);
   
-    writeCSVData(optiBnd, "_optiboundary.csv", 0);
-    
+    //writeCSVData(optiBnd, "_optiboundary.csv", 0);
+    string csvFilename2 = setVarableFilenames("_optboundary.cvs", 0);
+    ofstream csvFile(csvFilename2);
+    for (auto a : optiBnd){  
+        csvFile << a.coords[0] << "," << a.coords[1] << "; \n";
+    }
+    csvFile.close();
+  
     string csvFilename = setVariableFilenames("_skeletondata.csv", 0);
     ofstream csvFile(csvFilename);
     for (auto x : lind) {

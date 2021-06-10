@@ -720,7 +720,7 @@ void getOptBnd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Discrete
     for(unsigned int i = 0; i < optiBnd.size(); i++) 
     {
         auto g = optiBnd[i];
-        csvFile << disBnd->getCoordinates(i) << ";";
+        //csvFile << disBnd->getCoordinates(i) << ";";
         csvFile <<  g.coords[0] << "," << g.coords[1] << "; \n";
     }
   //for (auto a : optiBnd){  

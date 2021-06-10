@@ -671,6 +671,7 @@ void splitContours(Mat src) {
                     writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                                        "_generalData.csv");
                     getClosestInd(grskelpropag, disbnd);
+                    getOptBnd(grskelpropag, disbnd);
                     indx++;
                 }
             }
@@ -707,6 +708,25 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     csvFile.close();
 }
 
+void getOptBnd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::DiscreteBoundary<2>::Ptr disbnd){
+    algorithm::skeletonization::propagation::OptiBnd optiBnd;
+    algorithm::skeletonization::propagation::OptiUsedBnd optiUsedBnd;
+    createOptiBnd(disbnd, optiBnd, optiUsedBnd);
+  
+    //writeCSVData(optiBnd, "_optiboundary.csv", 0);
+    string csvFilename = setVarableFilenames("_optboundary.cvs", 0);
+    ofstream csvFile(csvFilename);
+    for(unsigned int i = 0; i < optiBnd.size(); i++) 
+    {
+        auto g = optiBnd[w];
+        csvFile <<  g.coords[0] << "," << g.coords[1] << "; \n";
+    }
+  //for (auto a : optiBnd){  
+        //csvFile << a.coords[0] << "," << a.coords[1] << "; \n";
+     //   csvFile << a.coords[0] << "," << a.coords[1] << "; \n";
+    //}
+    csvFile.close();
+}
 
 void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::DiscreteBoundary<2>::Ptr disbnd) {
 
@@ -716,14 +736,6 @@ void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::Disc
     createOptiBnd(disbnd, optiBnd, optiUsedBnd);
     std::list<unsigned int> lind;
     grskelpropag->getAllNodes(lind);
-  
-    //writeCSVData(optiBnd, "_optiboundary.csv", 0);
-    string csvFilename2 = setVarableFilenames("_optboundary.cvs", 0);
-    ofstream csvFile(csvFilename2);
-    for (auto a : optiBnd){  
-        csvFile << a.coords[0] << "," << a.coords[1] << "; \n";
-    }
-    csvFile.close();
   
     string csvFilename = setVariableFilenames("_skeletondata.csv", 0);
     ofstream csvFile(csvFilename);

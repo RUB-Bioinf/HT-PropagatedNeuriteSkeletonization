@@ -161,6 +161,7 @@ vector<pair<int, int>> getListFromPicture(Mat pic);
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, string filenameSuffix);
 
+void getOptBnd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::DiscreteBoundary<2>::Ptr disbnd);
 void getClosestInd(skeleton::GraphSkel2d::Ptr grskelpropag, const boundary::DiscreteBoundary<2>::Ptr disbnd);
 
 int main(int argc, char **argv) {

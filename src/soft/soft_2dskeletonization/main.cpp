@@ -69,11 +69,12 @@ double epsilonValueDefault = 10.0;
 bool outputDefault = true;
 bool variableOutputNamesDefault = true;
 bool openDirectory = true;
+bool applyClosingToDapi = true;
 
 
-//Declaration globale values
+//Declaration global values
 std::string imgfile, skeletonImgName, prefix, resultFilename, toxin;
-bool output = false;
+bool output = true;
 double epsilon;
 bool variableOutputNames;
 
@@ -212,57 +213,41 @@ int main(int argc, char **argv) {
     auto tm = *std::localtime(&t);
 
     std::ostringstream oss;
-    oss << std::put_time(&tm, "%d-%m-%Y/%H:%M");
+    oss << std::put_time(&tm, "%d-%m-%Y/%H-%M");
     auto str = oss.str();
     prefix = str;
-    system("../test.sh");
-    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test3.ijm ../resources/");
+    system("../preprocessing.sh");
+    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../preprocessing.ijm ../resources/");
     resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 
     if (variableOutputNames) {
-        cout << 224 <<endl;
-        cout << filenameEnding <<endl;
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
-        cout << 226 <<endl;
     }
-    cout << 229 <<endl;
     vector <pair<string,string> >  metadata = inputMetadata();
-    cout << 228 <<endl;
     int result = inputFolderGrabbing("../resources", metadata);
-    cout << "Programm fertig" <<endl;
+    cout << "Programm finished" <<endl;
     return result;
 }
 
 vector <pair<string,string> > inputMetadata(){
     //get number of lines
     pair <string, string> data;
-    cout << 240 <<endl;
     vector <pair<string,string> > maskedUnmasked;
-    cout << 242 <<endl;
     ifstream csvread;
-    cout << 244 <<endl;
 
     csvread.open("../resources/metadata.csv", ios::in);
-    cout << 247 <<endl;
     int i = 0;
-    cout << 249 <<endl;
     if (csvread) {
-        cout << 251 <<endl;
         //Read complete file and cut at ';'
         string s = "";
-        cout << 254 <<endl;
         string masked = "";
         string unmasked = "";
         while (getline(csvread, s, '\n'))
         {
-            cout << 259 <<endl;
             size_t index = s.find(";");
-            cout << 261 <<endl;
             if (index != std::string::npos){
-                cout << 263 <<endl;
                 vector<string> v = split(s, ";");
-                cout << 265 <<endl;
                 cout << s <<endl;
                 masked = v[0];
                 unmasked = v[1];
@@ -277,7 +262,7 @@ vector <pair<string,string> > inputMetadata(){
         csvread.close();
     }
     else {
-        cerr << "Fehler beim Lesen!" << endl;
+        cerr << "Failed to read file!" << endl;
     }
     return maskedUnmasked;
 }
@@ -297,23 +282,15 @@ string replaceSubstring(string str){
 }
 
 int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >  metadata){
-    cout << 284 <<endl;
     DIR *dir;
-    cout << 287<<endl;
     struct dirent *ent;
-    cout << 289 <<endl;
     string dirName;
-    cout << 291 <<endl;
     if ( openDirectory == true) {
         if ((dir = opendir(directoryName)) != NULL) {
-            cout << 294 <<endl;
             while ((ent = readdir(dir))) {
-                cout << 296 <<endl;
                 dirName = ent->d_name;
-                cout << 298 <<endl;
                 if (dirName != "." && dirName != ".." && dirName != ".git") {
                     //picture data found
-                  cout << 301 <<endl;  
                   if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
                         imgfile = directoryName;
                         cout << imgfile << endl;
@@ -386,7 +363,6 @@ int inputValuesRead(int argc, char **argv) {
 }
 
 string setVariableFilenames(string filenameSuffix, int i) {
-    cout << 375 <<endl;
     string first = imgfile.substr(13);
     cout<<imgfile<<endl;  
 
@@ -464,6 +440,7 @@ Mat generateCompleteImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     if (output && i == 0) {
         string filename = setVariableFilenames("-skeleton.png", i);
         imwrite(filename, image);
+        cout << "Writing 'Complete' skeleton image to disc" << endl;
     }
     return image;
 }
@@ -476,6 +453,7 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
     string filename = setVariableFilenames("-SkeletonImg.png", i);
     if (i == 0) {
         imwrite(filename, inputImage);
+        cout << "Writing skeleton image to disc" << endl;
     }
     return inputImage;
 }
@@ -488,6 +466,7 @@ Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     string filename = setVariableFilenames(filenameSuffix, i);
     if (i == 0) {
         imwrite(filename, image);
+        cout << "Writing boundary image to disc" << endl;
     }
     return image;
 }
@@ -531,16 +510,41 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
 
     //imwrite("Binary_image.png", bw);
-    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3));
-    Mat element = getStructuringElement(cv::MORPH_RECT,Size(3,3),Point(1,1));
+    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);
+    Mat element = getStructuringElement(cv::MORPH_CROSS,Size(7,7),Point(-1,-1));
     morphologyEx(bw, bw, MORPH_CLOSE, element);
-    imwrite("../output/Mopho_Output.png", bw);
+   
+  
+    //Morphological Closing for Dapi file 
+	Mat DAPI_bw, bw_merged;
+	if (applyClosingToDapi == true){
+		srcDAPI.convertTo(DAPI_bw, CV_8UC3);
+		cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
+		threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
+  
+		resize(DAPI_bw, DAPI_bw, Size(DAPI_bw.cols * 3, DAPI_bw.rows * 3),0,0,INTER_NEAREST);
+		Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
+		morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
+
+  
+		//Merge and Save
+		add(bw, DAPI_bw, bw_merged);
+	}else{
+		bw_merged = bw;
+	}
+  
+    // Closing with inverted CROSS structuring element
+	// See S-Modul Report from Frida for details and documentation on this
+    Mat kernel_inverted_cross = (Mat_<uchar>(5,5) << 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, CV_8U);
+    morphologyEx(bw_merged, bw_merged, MORPH_CLOSE, kernel_inverted_cross);
+  
+    imwrite("../output/Mopho_Output.png", bw_merged);
 
     // create CV_8U of distance image, needed for find conturs
     Mat dist_8u;
-    bw.convertTo(dist_8u, CV_8U);
+    bw_merged.convertTo(dist_8u, CV_8U);
 
-    Mat dist = distanceTransformAlexa(bw);
+    Mat dist = distanceTransformAlexa(bw_merged);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     findContours(dist_8u, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
@@ -627,9 +631,10 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname ; Anzahl Nodes ; Anzahl Branches ; Hausdorff Distance (px) ; Berechnungszeit (ms) ; Skelettpunkte Algorithmus ; Skelettpunkte ohne DistanceTranform ;  Skelettpunkte ohne DistanceTranform herunterskaliert ; Anzahl Zellkerne ; Skelettpunkte (herunterskaliert) / Zellkerne ; \n";
+            csvFile << "Dateiname;Anzahl Nodes;Anzahl Branches;Hausdorff Distance (px);Berechnungszeit (ms);Skelettpunkte Algorithmus;Skelettpunkte herunterskaliert;Skelettpunkte ohne DistanceTranform;Skelettpunkte ohne DistanceTranform herunterskaliert;Anzahl Zellkerne;Skelettpunkte (herunterskaliert) / Zellkerne;Skelettpunkte ohne Zytoplasma (herunterskaliert) / Zellkerne;\n";
             csvFile.close();
         }
+		
         //
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();
@@ -657,7 +662,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 
         Mat dist_8u_dapi;
         cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
-        resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
+        resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3),0,0,INTER_NEAREST);
         Mat thres_dapi;
         threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
         thres_dapi.convertTo(thres_dapi, CV_8UC1);
@@ -667,17 +672,17 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter,metadata, branchList,
                 dapiArea, maskedZytoplasmn);
 
-        Mat multiChannel = grayToBGR(thres_dapi, bw, result);
+        Mat multiChannel = grayToBGR(thres_dapi, bw_merged, result);
 
-//        Mat multiChannel2 = grayToBGR(result, bw, thres_dapi);
-//        string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
-//        imwrite(filenameMultiChannelResult2, multiChannel2);
+        Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
+        string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
+        imwrite(filenameMultiChannelResult2, multiChannel2);
         string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
         imwrite(filenameMultiChannelResult, multiChannel);
-//
-//        Mat multiChannel3 = grayToBGR(bw, thres_dapi, result);
-//        string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
-//        imwrite(filenameMultiChannelResult3, multiChannel3);
+
+        Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
+        string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
+        imwrite(filenameMultiChannelResult3, multiChannel3);
     } else {
         throw logic_error("No contours found...");
     }
@@ -698,7 +703,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
     threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
     imwrite("DapiThresNeu.png", thres_dapi);
 
-    resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3));
+    resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3),0,0,INTER_NEAREST);
     Mat resultArr = Mat::zeros(dist_8u.size(), CV_8UC1);
 
     if (dist_8u.rows == thres_dapi.rows && dist_8u.cols == thres_dapi.cols){
@@ -764,6 +769,11 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     }
     double avgDistances = sumDistances / distanceList.size();
     string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
+  
+    float skelfaktor_wholeSkeleton = (sumSkelPoints / 4.4);
+    string skelfaktor_wholeSkeletonStr = changePointToComma(skelfaktor_wholeSkeleton);
+    float skelNucleus_wholeSkeleton = skelfaktor_wholeSkeleton / countNucleus;
+    string skelNucleus_wholeSkeletonStr = changePointToComma(skelNucleus_wholeSkeleton);
 
     float skelfaktor = (skelPointsDist / 4.4);
     string skelfaktorStr = changePointToComma(skelfaktor);
@@ -772,8 +782,8 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
-    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints
-    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleusfaktorStr << "\n";
+    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints << ";" << skelfaktor_wholeSkeletonStr
+    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleus_wholeSkeletonStr << ";" << skelNucleusfaktorStr <<  "\n";
     csvFile.close();
 }
 

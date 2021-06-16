@@ -1,4 +1,4 @@
-echo Running test-sh
+echo Running preprocessing
 sleep 5
 whoami
 chmod +x ../resources

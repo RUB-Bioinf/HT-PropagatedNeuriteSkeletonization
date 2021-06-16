@@ -216,54 +216,38 @@ int main(int argc, char **argv) {
     oss << std::put_time(&tm, "%d-%m-%Y/%H-%M");
     auto str = oss.str();
     prefix = str;
-    system("../test.sh");
-    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../test3.ijm ../resources/");
+    system("../preprocessing.sh");
+    system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../preprocessing.ijm ../resources/");
     resultFilename = "../output/"+ prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 
     if (variableOutputNames) {
-        cout << 224 <<endl;
-        cout << filenameEnding <<endl;
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
-        cout << 226 <<endl;
     }
-    cout << 229 <<endl;
     vector <pair<string,string> >  metadata = inputMetadata();
-    cout << 228 <<endl;
     int result = inputFolderGrabbing("../resources", metadata);
-    cout << "Programm fertig" <<endl;
+    cout << "Programm finished" <<endl;
     return result;
 }
 
 vector <pair<string,string> > inputMetadata(){
     //get number of lines
     pair <string, string> data;
-    cout << 240 <<endl;
     vector <pair<string,string> > maskedUnmasked;
-    cout << 242 <<endl;
     ifstream csvread;
-    cout << 244 <<endl;
 
     csvread.open("../resources/metadata.csv", ios::in);
-    cout << 247 <<endl;
     int i = 0;
-    cout << 249 <<endl;
     if (csvread) {
-        cout << 251 <<endl;
         //Read complete file and cut at ';'
         string s = "";
-        cout << 254 <<endl;
         string masked = "";
         string unmasked = "";
         while (getline(csvread, s, '\n'))
         {
-            cout << 259 <<endl;
             size_t index = s.find(";");
-            cout << 261 <<endl;
             if (index != std::string::npos){
-                cout << 263 <<endl;
                 vector<string> v = split(s, ";");
-                cout << 265 <<endl;
                 cout << s <<endl;
                 masked = v[0];
                 unmasked = v[1];
@@ -278,7 +262,7 @@ vector <pair<string,string> > inputMetadata(){
         csvread.close();
     }
     else {
-        cerr << "Fehler beim Lesen!" << endl;
+        cerr << "Failed to read file!" << endl;
     }
     return maskedUnmasked;
 }
@@ -298,23 +282,15 @@ string replaceSubstring(string str){
 }
 
 int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >  metadata){
-    cout << 284 <<endl;
     DIR *dir;
-    cout << 287<<endl;
     struct dirent *ent;
-    cout << 289 <<endl;
     string dirName;
-    cout << 291 <<endl;
     if ( openDirectory == true) {
         if ((dir = opendir(directoryName)) != NULL) {
-            cout << 294 <<endl;
             while ((ent = readdir(dir))) {
-                cout << 296 <<endl;
                 dirName = ent->d_name;
-                cout << 298 <<endl;
                 if (dirName != "." && dirName != ".." && dirName != ".git") {
                     //picture data found
-                  cout << 301 <<endl;  
                   if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
                         imgfile = directoryName;
                         cout << imgfile << endl;
@@ -387,7 +363,6 @@ int inputValuesRead(int argc, char **argv) {
 }
 
 string setVariableFilenames(string filenameSuffix, int i) {
-    cout << 375 <<endl;
     string first = imgfile.substr(13);
     cout<<imgfile<<endl;  
 

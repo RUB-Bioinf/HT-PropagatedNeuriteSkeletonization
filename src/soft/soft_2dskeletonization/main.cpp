@@ -285,7 +285,7 @@ int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >
     DIR *dir;
     struct dirent *ent;
     string dirName;
-    if ( openDirectory == true) {
+    if (openDirectory == true) {
         if ((dir = opendir(directoryName)) != NULL) {
             while ((ent = readdir(dir))) {
                 dirName = ent->d_name;
@@ -513,8 +513,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     resize(bw, bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);
     Mat element = getStructuringElement(cv::MORPH_CROSS,Size(7,7),Point(-1,-1));
     morphologyEx(bw, bw, MORPH_CLOSE, element);
-   
-  
+
     //Morphological Closing for Dapi file 
 	Mat DAPI_bw, bw_merged;
 	if (applyClosingToDapi == true){
@@ -526,7 +525,6 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 		Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
 		morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
 
-  
 		//Merge and Save
 		add(bw, DAPI_bw, bw_merged);
 	}else{
@@ -601,7 +599,6 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
                     tuple<double, double, int, int> respropag = EvalSkel(dissh, disbnd, grskelpropag);
                     int t0 = duration0.count();
 
-
                     shape::DiscreteShape<2>::Ptr shppropag(
                             new shape::DiscreteShape<2>(dissh->getWidth(), dissh->getHeight()));
                     algorithm::skinning::Filling(shppropag, grskelpropag);
@@ -631,7 +628,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         //check if file not exists and creates one with headlines
         if(!file.good()){
             ofstream csvFile(resultFilename);
-            csvFile << "Dateiname;Anzahl Nodes;Anzahl Branches;Hausdorff Distance (px);Berechnungszeit (ms);Skelettpunkte Algorithmus;Skelettpunkte herunterskaliert;Skelettpunkte ohne DistanceTranform;Skelettpunkte ohne DistanceTranform herunterskaliert;Anzahl Zellkerne;Skelettpunkte (herunterskaliert) / Zellkerne;Skelettpunkte ohne Zytoplasma (herunterskaliert) / Zellkerne;\n";
+            csvFile << "Filename;Nodes;Branches;Hausdorff Distance (px);Calculation time (ms);Skeleton Points;Skeleton Points (Downscaled);Skeleton Points wo Distance Transform;Skeleton Points wo Distance Transform (Downscaled);Number Nuclei;Skeleton Points (Downscaled) per Nucleus;Skeleton Points wo Cytoplasm (Downscaled) per Nucleus;\n";
             csvFile.close();
         }
 		
@@ -701,7 +698,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
     cvtColor(dist_8u_dapi, dist_8u_dapi, COLOR_BGR2GRAY);
 
     threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
-    imwrite("DapiThresNeu.png", thres_dapi);
+    imwrite("DapiThresNew.png", thres_dapi);
 
     resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3),0,0,INTER_NEAREST);
     Mat resultArr = Mat::zeros(dist_8u.size(), CV_8UC1);
@@ -734,7 +731,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
         }
         //imwrite("DistanceTransformResult.png", resultArr);
     }else{
-        throw logic_error("Distance and Dapi file dont have the same size...");
+        throw logic_error("Distance and Dapi file do not have the same size!");
     }
     Mat completeResult;
     cv::add(resultArr, thres_dapi, completeResult);
@@ -805,15 +802,15 @@ int countNucleus(Mat dapiInput){
     cvtColor(dist_8u_dapi, dist_8u_dapi, COLOR_BGR2GRAY);
 
     threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
-    imwrite("DapiThres.png", thres_dapi);
+    imwrite("DapiThresh.png", thres_dapi);
 
     Mat dist;
     distanceTransform(thres_dapi, dist, DIST_L2, 3);
     normalize(dist, dist, 0, 1.0, NORM_MINMAX);
-    imwrite("Distance Transform Image.png", dist);
+    imwrite("DistanceTransformImage.png", dist);
 
     threshold(dist, dist, 0.4, 1.0, THRESH_BINARY);
-    imwrite("Distance Transform Threshold Image.png", dist);
+    imwrite("DistanceTransformThresholdImage.png", dist);
 
     // Dilate a bit the dist image
     Mat kernel1 = Mat::ones(3, 3, CV_8U);
@@ -829,7 +826,6 @@ int countNucleus(Mat dapiInput){
     findContours(dist_8u2, contours2, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
     int indx2 = contours2.size();
-
     // Create the marker image for the watershed algorithm
     Mat markers = Mat::zeros(dist.size(), CV_32S);
     // Draw the foreground markers

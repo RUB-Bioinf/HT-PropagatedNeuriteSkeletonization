@@ -655,7 +655,8 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         Mat completeWithoutDistanceTrans;
         cv::subtract(bw, result, completeWithoutDistanceTrans);
         string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
-        imwrite(filename2, completeWithoutDistanceTrans);
+        // imwrite(filename2, completeWithoutDistanceTrans);
+	// TODO: Try/Catch this or make this optional via param?
 
         Mat dist_8u_dapi;
         cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
@@ -673,13 +674,16 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 
         Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
         string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
-        imwrite(filenameMultiChannelResult2, multiChannel2);
+        //imwrite(filenameMultiChannelResult2, multiChannel2);
+	// TODO: Try/Catch this or make this optional via param?
         string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
-        imwrite(filenameMultiChannelResult, multiChannel);
+        //imwrite(filenameMultiChannelResult, multiChannel);
+	// TODO: Try/Catch this or make this optional via param?
 
         Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
         string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
-        imwrite(filenameMultiChannelResult3, multiChannel3);
+        //imwrite(filenameMultiChannelResult3, multiChannel3);
+	// TODO: Try/Catch this or make this optional via param?
     } else {
         throw logic_error("No contours found...");
     }

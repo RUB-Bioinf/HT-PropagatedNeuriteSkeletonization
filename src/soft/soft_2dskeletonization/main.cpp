@@ -82,7 +82,7 @@ bool variableOutputNames;
  *
  * @return a vector with all metadata lines
  */
-vector <pair<string,string> > inputMetadata();
+vector <pair<string, string>> inputMetadata();
 
 /**
  *
@@ -96,13 +96,13 @@ string replaceSubstring(string str);
  * @param directoryName Name of the directory to grab at
  * @return Error numbers for failure
  */
-int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >  metadata);
+int inputFolderGrabbing(const char *directoryName, vector <pair<string, string>> metadata);
 
 /**
  *
  * @return
  */
-Mat simpleRead(vector <pair<string,string> >  metadata);
+Mat simpleRead(vector <pair<string, string>> metadata);
 
 /**
  * Reads the command line parameters and input it to globale params
@@ -180,15 +180,16 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
  * @return the matrix of the boundary image, zero = background and 255 = foreground, simple black and white image
  */
 Mat
-generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, string filenameSuffix,
-        int i);
+generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd,
+                      string filenameSuffix,
+                      int i);
 
 /**
  *
  * @param srcAlexa
  * @param srcDapi
  */
-void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  metadata);
+void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string, string>> metadata);
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
                         list<int> skeletonPointSingleCountList, int SkeletonPointsDist, int countNucleus,
@@ -202,9 +203,10 @@ int countNucleus(Mat dapiInput);
 
 Mat grayToBGR(Mat blue, Mat green, Mat red);
 
-void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> >, list<int> branchList, int nucleusArea, int maskedZytoplasmn);
+void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string, string>>,
+                       list<int> branchList, int nucleusArea, int maskedZytoplasmn);
 
-vector<string> split(const string& str, const string& delim);
+vector <string> split(const string &str, const string &delim);
 
 
 int main(int argc, char **argv) {
@@ -218,22 +220,22 @@ int main(int argc, char **argv) {
     prefix = str;
     system("../preprocessing.sh");
     system(" /opt/fiji/Fiji.app/ImageJ-linux64 -ij2 --headless --console -macro ../preprocessing.ijm ../resources/");
-    resultFilename = "../output/"+ prefix + "/resultData.csv";
+    resultFilename = "../output/" + prefix + "/resultData.csv";
     inputValuesRead(argc, argv);
 
     if (variableOutputNames) {
         skeletonImgName = setVariableFilenames(filenameEnding, 0);
     }
-    vector <pair<string,string> >  metadata = inputMetadata();
+    vector <pair<string, string>> metadata = inputMetadata();
     int result = inputFolderGrabbing("../resources", metadata);
-    cout << "Program finished" <<endl;
+    cout << "Program finished" << endl;
     return result;
 }
 
-vector <pair<string,string> > inputMetadata(){
+vector <pair<string, string>> inputMetadata() {
     //get number of lines
     pair <string, string> data;
-    vector <pair<string,string> > maskedUnmasked;
+    vector <pair<string, string>> maskedUnmasked;
     ifstream csvread;
 
     csvread.open("../resources/metadata.csv", ios::in);
@@ -243,31 +245,28 @@ vector <pair<string,string> > inputMetadata(){
         string s = "";
         string masked = "";
         string unmasked = "";
-        while (getline(csvread, s, '\n'))
-        {
+        while (getline(csvread, s, '\n')) {
             size_t index = s.find(";");
-            if (index != std::string::npos){
-                vector<string> v = split(s, ";");
-                cout << s <<endl;
+            if (index != std::string::npos) {
+                vector <string> v = split(s, ";");
+                cout << s << endl;
                 masked = v[0];
                 unmasked = v[1];
-                data = make_pair(masked,unmasked);
+                data = make_pair(masked, unmasked);
                 maskedUnmasked.push_back(data);
-            }
-            else{
-                std::string token = s.substr(0, s.length()-1);
+            } else {
+                std::string token = s.substr(0, s.length() - 1);
                 toxin = token;
             }
         }
         csvread.close();
-    }
-    else {
+    } else {
         cerr << "Failed to read file!" << endl;
     }
     return maskedUnmasked;
 }
 
-string replaceSubstring(string str){
+string replaceSubstring(string str) {
     size_t index = 0;
     while (true) {
         /* Locate the substring to replace. */
@@ -281,7 +280,7 @@ string replaceSubstring(string str){
     return str;
 }
 
-int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >  metadata){
+int inputFolderGrabbing(const char *directoryName, vector <pair<string, string>> metadata) {
     DIR *dir;
     struct dirent *ent;
     string dirName;
@@ -291,26 +290,24 @@ int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >
                 dirName = ent->d_name;
                 if (dirName != "." && dirName != ".." && dirName != ".git") {
                     //picture data found
-                  if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)){
+                    if ((dirName.find(".png") != string::npos) && (dirName.find("Alexa488") != string::npos)) {
                         imgfile = directoryName;
                         cout << imgfile << endl;
                         imgfile.append("/" + dirName);
                         cout << imgfile << endl;
                         Mat outClosing = simpleRead(metadata);
                     }
-                    //directory found
-                    else if (dirName.find(".") == string::npos)
-                    {
+                        //directory found
+                    else if (dirName.find(".") == string::npos) {
                         string fullDirectoryName = directoryName;
                         fullDirectoryName.append("/" + dirName);
                         int n = fullDirectoryName.length();
-                        char char_array[n+1];
-                        strcpy (char_array, fullDirectoryName.c_str());
-                        cout<<char_array<<endl;
+                        char char_array[n + 1];
+                        strcpy(char_array, fullDirectoryName.c_str());
+                        cout << char_array << endl;
                         const char *dirNeu = char_array;
                         inputFolderGrabbing(dirNeu, metadata);
-                    }
-                    else {
+                    } else {
                         //nothing
                     }
                 }
@@ -320,7 +317,7 @@ int inputFolderGrabbing(const char *directoryName, vector <pair<string,string> >
             perror("");
             return EXIT_FAILURE;
         }
-    }else {
+    } else {
         Mat outClosing = simpleRead(metadata);
     }
     //exit program
@@ -364,11 +361,11 @@ int inputValuesRead(int argc, char **argv) {
 
 string setVariableFilenames(string filenameSuffix, int i) {
     string first = imgfile.substr(13);
-    cout<<imgfile<<endl;  
+    cout << imgfile << endl;
 
-    int filenameLength = first.length();	
-    string filename = first.substr(0, filenameLength - 4);	
-    cout<<filename<<endl;
+    int filenameLength = first.length();
+    string filename = first.substr(0, filenameLength - 4);
+    cout << filename << endl;
 
     string generatedFilename;
 
@@ -381,11 +378,11 @@ string setVariableFilenames(string filenameSuffix, int i) {
         filename = "../output/" + prefix + "/" + filename + "_" + str;
         generatedFilename = filename + filenameSuffix;
     }
-    cout<<generatedFilename<<endl;
+    cout << generatedFilename << endl;
     return generatedFilename;
 }
 
-cv::Mat simpleRead(vector <pair<string,string> >  metadata) {
+cv::Mat simpleRead(vector <pair<string, string>> metadata) {
     Mat matAlexaFile = imread(imgfile);
     if (matAlexaFile.empty()) {
         throw logic_error("Wrong input data Alexa file...");
@@ -459,8 +456,9 @@ Mat generateSkeletonImage(Mat inputImage, shape::DiscreteShape<2>::Ptr dissh, sk
 }
 
 //"-BoundaryImg.png"
-Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd, string filenameSuffix,
-        int i) {
+Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundary::DiscreteBoundary<2>::Ptr disbnd,
+                          string filenameSuffix,
+                          int i) {
     displayopencv::DisplayDiscreteBoundary(disbnd, image, dissh->getFrame(),
                                            cv::Scalar(255, 255, 255));
     string filename = setVariableFilenames(filenameSuffix, i);
@@ -471,7 +469,7 @@ Mat generateBoundaryImage(Mat image, shape::DiscreteShape<2>::Ptr dissh, boundar
     return image;
 }
 
-Mat distanceTransformAlexa(Mat srcAlexa){
+Mat distanceTransformAlexa(Mat srcAlexa) {
     Mat dist;
     distanceTransform(srcAlexa, dist, DIST_C, 3);
     normalize(dist, dist, 0, 1.0, NORM_MINMAX);
@@ -483,7 +481,7 @@ Mat distanceTransformAlexa(Mat srcAlexa){
     return dist;
 }
 
-Mat substractDistFromSkeletonfile(Mat srcSkeleton, Mat dist){
+Mat substractDistFromSkeletonfile(Mat srcSkeleton, Mat dist) {
     Mat result;
     auto type1 = srcSkeleton.type();
     auto type2 = dist.type();
@@ -492,7 +490,7 @@ Mat substractDistFromSkeletonfile(Mat srcSkeleton, Mat dist){
     return result;
 }
 
-void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  metadata) {
+void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string, string>> metadata) {
     Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
     Mat imgLaplacian;
     filter2D(srcAlexa, imgLaplacian, CV_32F, kernel);
@@ -510,32 +508,33 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
 
     //imwrite("Binary_image.png", bw);
-    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3),0,0,INTER_NEAREST);
-    Mat element = getStructuringElement(cv::MORPH_CROSS,Size(7,7),Point(-1,-1));
+    resize(bw, bw, Size(bw.cols * 3, bw.rows * 3), 0, 0, INTER_NEAREST);
+    Mat element = getStructuringElement(cv::MORPH_CROSS, Size(7, 7), Point(-1, -1));
     morphologyEx(bw, bw, MORPH_CLOSE, element);
 
     //Morphological Closing for Dapi file 
-	Mat DAPI_bw, bw_merged;
-	if (applyClosingToDapi == true){
-		srcDAPI.convertTo(DAPI_bw, CV_8UC3);
-		cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
-		threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
-  
-		resize(DAPI_bw, DAPI_bw, Size(DAPI_bw.cols * 3, DAPI_bw.rows * 3),0,0,INTER_NEAREST);
-		Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS,Size(15,15),Point(-1,-1));
-		morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
+    Mat DAPI_bw, bw_merged;
+    if (applyClosingToDapi == true) {
+        srcDAPI.convertTo(DAPI_bw, CV_8UC3);
+        cvtColor(DAPI_bw, DAPI_bw, COLOR_BGR2GRAY);
+        threshold(DAPI_bw, DAPI_bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
 
-		//Merge and Save
-		add(bw, DAPI_bw, bw_merged);
-	}else{
-		bw_merged = bw;
-	}
-  
+        resize(DAPI_bw, DAPI_bw, Size(DAPI_bw.cols * 3, DAPI_bw.rows * 3), 0, 0, INTER_NEAREST);
+        Mat element_DAPI = getStructuringElement(cv::MORPH_CROSS, Size(15, 15), Point(-1, -1));
+        morphologyEx(DAPI_bw, DAPI_bw, MORPH_CLOSE, element_DAPI);
+
+        //Merge and Save
+        add(bw, DAPI_bw, bw_merged);
+    } else {
+        bw_merged = bw;
+    }
+
     // Closing with inverted CROSS structuring element
-	// See S-Modul Report from Frida for details and documentation on this
-    Mat kernel_inverted_cross = (Mat_<uchar>(5,5) << 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, CV_8U);
+    // See S-Modul Report from Frida for details and documentation on this
+    Mat kernel_inverted_cross = (Mat_<uchar>(5, 5)
+            << 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, CV_8U);
     morphologyEx(bw_merged, bw_merged, MORPH_CLOSE, kernel_inverted_cross);
-  
+
     imwrite("../output/Mopho_Output.png", bw_merged);
 
     // create CV_8U of distance image, needed for find conturs
@@ -543,8 +542,8 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     bw_merged.convertTo(dist_8u, CV_8U);
 
     Mat dist = distanceTransformAlexa(bw_merged);
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
+    vector <vector<Point>> contours;
+    vector <Vec4i> hierarchy;
     findContours(dist_8u, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
 
     //Mat test = Mat::zeros(dist_8u.size(), CV_8UC3);
@@ -591,7 +590,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
 
                     auto start0 = std::chrono::steady_clock::now();
                     algorithm::skeletonization::propagation::OptionsSphProp options(2.0 * epsilon);
-                    map<pair<int, int>, vector<vector<pair<int, int>>>> contractlist;
+                    map < pair < int, int >, vector < vector < pair < int, int >> >> contractlist;
                     skeleton::GraphSkel2d::Ptr grskelpropag = algorithm::skeletonization::propagation::SpherePropagation2D(
                             contractlist, disbnd,
                             options);
@@ -608,11 +607,11 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
                     generateSkeletonImage(completeSkeleton, dissh, grskelpropag, 0);
                     SparseMat newMat(skeletonImg);
                     int SkeletonPointsCounter = newMat.nzcount();
-                    if (SkeletonPointsCounter != 0){
+                    if (SkeletonPointsCounter != 0) {
                         Mat imagepropag(dist_8u.size(), CV_8UC3, Scalar(255, 255, 255));
                         generateCompleteImage(completeIMG, dissh, disbnd, shppropag, grskelpropag, 0);
                         Mat boundImg = Mat::zeros(image.rows, image.cols, CV_8UC1);
-                        generateBoundaryImage(completeBoundary, dissh, disbnd, "-BoundaryImg.png",  0);
+                        generateBoundaryImage(completeBoundary, dissh, disbnd, "-BoundaryImg.png", 0);
 
                         nodeList.push_back(get<2>(respropag));
                         branchList.push_back(get<3>(respropag));
@@ -626,12 +625,13 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         }
         ifstream file(resultFilename);
         //check if file not exists and creates one with headlines
-        if(!file.good()){
+        if (!file.good()) {
             ofstream csvFile(resultFilename);
-            csvFile << "Filename;Nodes;Branches;Hausdorff Distance (px);Calculation time (ms);Skeleton Points;Skeleton Points (Downscaled);Skeleton Points wo Distance Transform;Skeleton Points wo Distance Transform (Downscaled);Number Nuclei;Skeleton Points (Downscaled) per Nucleus;Skeleton Points wo Cytoplasm (Downscaled) per Nucleus;\n";
+            csvFile
+                    << "Filename;Nodes;Branches;Hausdorff Distance (px);Calculation time (ms);Skeleton Points;Skeleton Points (Downscaled);Skeleton Points wo Distance Transform;Skeleton Points wo Distance Transform (Downscaled);Number Nuclei;Skeleton Points (Downscaled) per Nucleus;Skeleton Points wo Cytoplasm (Downscaled) per Nucleus;\n";
             csvFile.close();
         }
-		
+
         //
         SparseMat newMat(completeSkeleton);
         int SkeletonPointsCounterComplete = newMat.nzcount();
@@ -651,44 +651,47 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         int nucleusCounter = countNucleus(srcDAPI);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                            skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
-        cout << "Successfully created and populated results CSV file with data!" <<endl;
+        cout << "Successfully created and populated results CSV file with data!" << endl;
 
-        try{
-        Mat completeWithoutDistanceTrans;
-        cv::subtract(bw, result, completeWithoutDistanceTrans);
-        string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
-        // imwrite(filename2, completeWithoutDistanceTrans);
-	// TODO: Try/Catch this or make this optional via param?
+        try {
+            Mat completeWithoutDistanceTrans;
+            cv::subtract(bw, result, completeWithoutDistanceTrans);
+            string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
+            // imwrite(filename2, completeWithoutDistanceTrans);
+            // TODO: Try/Catch this or make this optional via param?
 
-        Mat dist_8u_dapi;
-        cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
-        resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3),0,0,INTER_NEAREST);
-        Mat thres_dapi;
-        threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
-        thres_dapi.convertTo(thres_dapi, CV_8UC1);
-        SparseMat dapiBin(thres_dapi);
-        int dapiArea = dapiBin.nzcount();
+            Mat dist_8u_dapi;
+            cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
+            resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3), 0, 0, INTER_NEAREST);
+            Mat thres_dapi;
+            threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
+            thres_dapi.convertTo(thres_dapi, CV_8UC1);
+            SparseMat dapiBin(thres_dapi);
+            int dapiArea = dapiBin.nzcount();
 
-        generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter,metadata, branchList,
-                dapiArea, maskedZytoplasmn);
+            generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter, metadata, branchList,
+                              dapiArea, maskedZytoplasmn);
 
-        Mat multiChannel = grayToBGR(thres_dapi, bw_merged, result);
+            Mat multiChannel = grayToBGR(thres_dapi, bw_merged, result);
 
-        Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
-        string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
-        //imwrite(filenameMultiChannelResult2, multiChannel2);
-	// TODO: Try/Catch this or make this optional via param?
-        string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
-        //imwrite(filenameMultiChannelResult, multiChannel);
-	// TODO: Try/Catch this or make this optional via param?
+            Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
+            string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
+            //imwrite(filenameMultiChannelResult2, multiChannel2);
+            // TODO: Try/Catch this or make this optional via param?
+            string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
+            //imwrite(filenameMultiChannelResult, multiChannel);
+            // TODO: Try/Catch this or make this optional via param?
 
-        Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
-        string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
-        //imwrite(filenameMultiChannelResult3, multiChannel3);
-	// TODO: Try/Catch this or make this optional via param?
+            Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
+            string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
+            //imwrite(filenameMultiChannelResult3, multiChannel3);
+            // TODO: Try/Catch this or make this optional via param?
 
-	    } catch (...) {
-            cout << "An error occurred saving additional image output, but the program will continue! (Your raw csv data is saved!)" <<endl;
+        } catch (...) {
+            cout
+                    << "An error occurred saving additional image output, but the program will continue! (Your raw csv data is saved!)"
+                    << endl;
+            // TODO: What happens when this fails? Will the program still work?
         }
     } else {
         throw logic_error("No contours found...");
@@ -696,7 +699,7 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
     //findContours(dist_8u, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 }
 
-Mat compareDistAndDapiFile(Mat dist, Mat dapi){
+Mat compareDistAndDapiFile(Mat dist, Mat dapi) {
     Mat dist_8u;
     dist.convertTo(dist_8u, CV_8U);
     imwrite("AlexaDist.png", dist);
@@ -710,26 +713,25 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
     threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
     imwrite("DapiThresNew.png", thres_dapi);
 
-    resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3),0,0,INTER_NEAREST);
+    resize(thres_dapi, thres_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3), 0, 0, INTER_NEAREST);
     Mat resultArr = Mat::zeros(dist_8u.size(), CV_8UC1);
 
-    if (dist_8u.rows == thres_dapi.rows && dist_8u.cols == thres_dapi.cols){
-        vector<vector<Point> > contoursDist;
-        vector<Vec4i> hierarchy;
+    if (dist_8u.rows == thres_dapi.rows && dist_8u.cols == thres_dapi.cols) {
+        vector <vector<Point>> contoursDist;
+        vector <Vec4i> hierarchy;
         findContours(dist_8u, contoursDist, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
 
         if (!contoursDist.empty() && !hierarchy.empty()) {
             for (int i = 0; i < contoursDist.size(); i++) {
-                vector<vector<Point> > contoursDapi;
-                vector<Vec4i> hierarchy;
+                vector <vector<Point>> contoursDapi;
+                vector <Vec4i> hierarchy;
                 findContours(thres_dapi, contoursDapi, hierarchy, RETR_CCOMP, CHAIN_APPROX_TC89_L1);
                 if (!contoursDapi.empty() && !hierarchy.empty()) {
                     for (int j = 0; j < contoursDapi.size(); j++) {
                         for (int k = 0; k < contoursDapi[j].size(); k++) {
                             Point_<int> p = contoursDapi[j][k];
                             double result = pointPolygonTest(contoursDist[i], p, true);
-                            if(result >=0)
-                            {
+                            if (result >= 0) {
                                 Scalar color(rand() & 255, rand() & 255, rand() & 255);
                                 cv::drawContours(resultArr, contoursDist, (int) i, color, FILLED, 8);
                                 break;
@@ -740,7 +742,7 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
             }
         }
         //imwrite("DistanceTransformResult.png", resultArr);
-    }else{
+    } else {
         throw logic_error("Distance and Dapi file do not have the same size!");
     }
     Mat completeResult;
@@ -749,7 +751,8 @@ Mat compareDistAndDapiFile(Mat dist, Mat dapi){
 }
 
 void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> distanceList, list<int> timeList,
-                        list<int> skeletonPointSingleCountList, int skelPointsDist, int countNucleus,  string filenameSuffix) {
+                        list<int> skeletonPointSingleCountList, int skelPointsDist, int countNucleus,
+                        string filenameSuffix) {
     list<int>::iterator itNodes = nodeList.begin();
     list<int>::iterator itBranches = branchList.begin();
     list<double>::iterator itDistances = distanceList.begin();
@@ -765,18 +768,20 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
     if (nodeList.size() == branchList.size() && branchList.size() == distanceList.size() && distanceList.size() ==
                                                                                             timeList.size() &&
         timeList.size() == skeletonPointSingleCountList.size()) {
-        for (; itNodes != nodeList.end() && itBranches != branchList.end() && itDistances != distanceList.end() && itTimes != timeList.end() &&
-               itSkeletonPoints != skeletonPointSingleCountList.end(); itNodes++, itBranches++, itDistances++, itTimes++, itSkeletonPoints++) {
+        for (; itNodes != nodeList.end() && itBranches != branchList.end() && itDistances != distanceList.end() &&
+               itTimes != timeList.end() &&
+               itSkeletonPoints !=
+               skeletonPointSingleCountList.end(); itNodes++, itBranches++, itDistances++, itTimes++, itSkeletonPoints++) {
             sumNodes = sumNodes + *itNodes;
             sumBranches = sumBranches + *itBranches;
             sumDistances = sumDistances + *itDistances;
-            sumTimes = sumTimes +  *itTimes;
+            sumTimes = sumTimes + *itTimes;
             sumSkelPoints = sumSkelPoints + *itSkeletonPoints;
         }
     }
     double avgDistances = sumDistances / distanceList.size();
     string inputFilename = imgfile.substr(14, (imgfile.length() - 18));
-  
+
     float skelfaktor_wholeSkeleton = (sumSkelPoints / 4.4);
     string skelfaktor_wholeSkeletonStr = changePointToComma(skelfaktor_wholeSkeleton);
     float skelNucleus_wholeSkeleton = skelfaktor_wholeSkeleton / countNucleus;
@@ -789,22 +794,24 @@ void writeCSVDataResult(list<int> nodeList, list<int> branchList, list<double> d
 
     //Write data in file
     ofstream csvFile(filenameSuffix, ios::app);
-    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";" << sumSkelPoints << ";" << skelfaktor_wholeSkeletonStr
-    << ";" << skelPointsDist << ";" <<  skelfaktorStr << ";" << countNucleus << ";" << skelNucleus_wholeSkeletonStr << ";" << skelNucleusfaktorStr <<  "\n";
+    csvFile << inputFilename << ";" << sumNodes << ";" << sumBranches << ";" << avgDistances << ";" << sumTimes << ";"
+            << sumSkelPoints << ";" << skelfaktor_wholeSkeletonStr
+            << ";" << skelPointsDist << ";" << skelfaktorStr << ";" << countNucleus << ";"
+            << skelNucleus_wholeSkeletonStr << ";" << skelNucleusfaktorStr << "\n";
     csvFile.close();
 }
 
-string changePointToComma(float number){
+string changePointToComma(float number) {
     string str = to_string(number);
     size_t index = 0;
     index = str.find(".", index);
-    if (index != std::string::npos )
-    /* Make the replacement. */
+    if (index != std::string::npos)
+        /* Make the replacement. */
         str.replace(index, 1, ",");
     return str;
 }
 
-int countNucleus(Mat dapiInput){
+int countNucleus(Mat dapiInput) {
     Mat dist_8u_dapi;
     Mat thres_dapi;
 
@@ -832,106 +839,105 @@ int countNucleus(Mat dapiInput){
     Mat dist_8u2;
     dist.convertTo(dist_8u2, CV_8U);
     // Find total markers
-    vector<vector<Point> > contours2;
+    vector <vector<Point>> contours2;
     findContours(dist_8u2, contours2, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
     int indx2 = contours2.size();
     // Create the marker image for the watershed algorithm
     Mat markers = Mat::zeros(dist.size(), CV_32S);
     // Draw the foreground markers
-    for (size_t i = 0; i < contours2.size(); i++)
-    {
-        drawContours(markers, contours2, static_cast<int>(i), Scalar(static_cast<int>(i)+1), -1);
+    for (size_t i = 0; i < contours2.size(); i++) {
+        drawContours(markers, contours2, static_cast<int>(i), Scalar(static_cast<int>(i) + 1), -1);
     }
     // Draw the background marker
-    circle(markers, Point(5,5), 3, Scalar(255), -1);
-    imwrite("Markers.png", markers*10000);
+    circle(markers, Point(5, 5), 3, Scalar(255), -1);
+    imwrite("Markers.png", markers * 10000);
     return indx2;
 }
 
-Mat grayToBGR(Mat blue, Mat green, Mat red){
+Mat grayToBGR(Mat blue, Mat green, Mat red) {
     Mat blueNew, greenNew, redNew;
-    blueNew = blue *0.9;
+    blueNew = blue * 0.9;
     greenNew = green * 0.45;
     redNew = red;
-    Mat out (blueNew.rows, blueNew.cols, CV_8UC3);
+    Mat out(blueNew.rows, blueNew.cols, CV_8UC3);
     Mat in[] = {blueNew, greenNew, redNew};
-    int from_to[] = {0,0,1,1,2,2};
+    int from_to[] = {0, 0, 1, 1, 2, 2};
     mixChannels(&blueNew, 3, &out, 1, from_to, 3);
     return out;
 }
 
- void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string,string> > metadata,
-         list<int> branchList, int nucleusArea, int maskedZytoplasmn){
+void generateCSVForIUF(string filename, double skeletonPoints, int nucleus, vector <pair<string, string>> metadata,
+                       list<int> branchList, int nucleusArea, int maskedZytoplasmn) {
 
-     vector<string> parthOfFile = split(filename, "/");
-     int lenghtVector = parthOfFile.size();
-     std::string path = parthOfFile[0] + "/output/" + prefix + "/";
-     string resultFileIUF = path + "IUF.csv";
-     ifstream file(resultFileIUF);
-     //check if file not exists and creates one with headlines
-     if(!file.good()){
-         ofstream csvFile(resultFileIUF);
-         csvFile << "Experiment ID ; " + toxin + " ; Well ; Sum neurite length ; Nucleus ; Relative neurite length ; Sum branches complete skelett ; Sum nucleus area ; Average nucleus area ; Masked zytoplasmn\n";
-         csvFile.close();
-     }
+    vector <string> parthOfFile = split(filename, "/");
+    int lenghtVector = parthOfFile.size();
+    std::string path = parthOfFile[0] + "/output/" + prefix + "/";
+    string resultFileIUF = path + "IUF.csv";
+    ifstream file(resultFileIUF);
+    //check if file not exists and creates one with headlines
+    if (!file.good()) {
+        ofstream csvFile(resultFileIUF);
+        csvFile << "Experiment ID ; " + toxin +
+                   " ; Well ; Sum neurite length ; Nucleus ; Relative neurite length ; Sum branches complete skelett ; Sum nucleus area ; Average nucleus area ; Masked zytoplasmn\n";
+        csvFile.close();
+    }
 
-     list<int>::iterator itBranches = branchList.begin();
-     int sumBranches = 0;
-     for (; itBranches != branchList.end(); itBranches++) {
-             sumBranches = sumBranches + *itBranches;
-     }
-     // create metadata
+    list<int>::iterator itBranches = branchList.begin();
+    int sumBranches = 0;
+    for (; itBranches != branchList.end(); itBranches++) {
+        sumBranches = sumBranches + *itBranches;
+    }
+    // create metadata
 
-     std::string experiment = parthOfFile[lenghtVector-1].substr(0, parthOfFile[lenghtVector-1].find("_"));
-     vector<string> fileNameParts = split(parthOfFile[lenghtVector-1], "_");
-     string maskedConcentration = fileNameParts[3];
-     string unmaskedConcentration;
+    std::string experiment = parthOfFile[lenghtVector - 1].substr(0, parthOfFile[lenghtVector - 1].find("_"));
+    vector <string> fileNameParts = split(parthOfFile[lenghtVector - 1], "_");
+    string maskedConcentration = fileNameParts[3];
+    string unmaskedConcentration;
 
-     if(maskedConcentration.size() > 0){
-         if(maskedConcentration != "R" && maskedConcentration != "ctrlctrl" && maskedConcentration != "ctrlDMSO"){
-             for(int i = 0; i < metadata.size(); i++){
-                 if(maskedConcentration == metadata[i].first)
-                     if(metadata[i].second == "ctrlctrl"){
-                         unmaskedConcentration = "Positive control (PC)";
-                     }else if (metadata[i].second == "ctrlDMSO"){
-                         unmaskedConcentration = "Solvent control (SC)";
-                     } else{
-                         unmaskedConcentration = metadata[i].second;
-                     }
-             }
-         } else if (maskedConcentration == "R"){
-             unmaskedConcentration = fileNameParts[4];
-         } else if (maskedConcentration != "ctrlctrl"){
-             unmaskedConcentration = "Positive control (PC)";
-         }else{
-             unmaskedConcentration = "Solvent control (SC)";
-         }
-     }
-     double averageNeuriteLenght = 0;
-     double averageNucleusArea = 0;
-     string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
-     if (nucleus != 0){
-         averageNeuriteLenght = (skeletonPoints/4.4) / nucleus;
-         averageNucleusArea = (nucleusArea / nucleus);
-     }
-     ofstream csvFile(resultFileIUF, ios::app);
-     csvFile << experiment << ";" << unmaskedConcentration << ";" << well << ";" << (skeletonPoints/4.4) << ";" << nucleus << ";" << averageNeuriteLenght << ";" << sumBranches << ";" << nucleusArea << ";" << averageNucleusArea << ";" << maskedZytoplasmn <<"\n";
-     csvFile.close();
+    if (maskedConcentration.size() > 0) {
+        if (maskedConcentration != "R" && maskedConcentration != "ctrlctrl" && maskedConcentration != "ctrlDMSO") {
+            for (int i = 0; i < metadata.size(); i++) {
+                if (maskedConcentration == metadata[i].first)
+                    if (metadata[i].second == "ctrlctrl") {
+                        unmaskedConcentration = "Positive control (PC)";
+                    } else if (metadata[i].second == "ctrlDMSO") {
+                        unmaskedConcentration = "Solvent control (SC)";
+                    } else {
+                        unmaskedConcentration = metadata[i].second;
+                    }
+            }
+        } else if (maskedConcentration == "R") {
+            unmaskedConcentration = fileNameParts[4];
+        } else if (maskedConcentration != "ctrlctrl") {
+            unmaskedConcentration = "Positive control (PC)";
+        } else {
+            unmaskedConcentration = "Solvent control (SC)";
+        }
+    }
+    double averageNeuriteLenght = 0;
+    double averageNucleusArea = 0;
+    string well = "C" + fileNameParts[5] + fileNameParts[7].substr(0, fileNameParts[7].find("."));
+    if (nucleus != 0) {
+        averageNeuriteLenght = (skeletonPoints / 4.4) / nucleus;
+        averageNucleusArea = (nucleusArea / nucleus);
+    }
+    ofstream csvFile(resultFileIUF, ios::app);
+    csvFile << experiment << ";" << unmaskedConcentration << ";" << well << ";" << (skeletonPoints / 4.4) << ";"
+            << nucleus << ";" << averageNeuriteLenght << ";" << sumBranches << ";" << nucleusArea << ";"
+            << averageNucleusArea << ";" << maskedZytoplasmn << "\n";
+    csvFile.close();
 }
 
-vector<string> split(const string& str, const string& delim)
-{
-    vector<string> tokens;
+vector <string> split(const string &str, const string &delim) {
+    vector <string> tokens;
     size_t prev = 0, pos = 0;
-    do
-    {
+    do {
         pos = str.find(delim, prev);
         if (pos == string::npos) pos = str.length();
-        string token = str.substr(prev, pos-prev);
+        string token = str.substr(prev, pos - prev);
         if (!token.empty()) tokens.push_back(token);
         prev = pos + delim.length();
-    }
-    while (pos < str.length() && prev < str.length());
+    } while (pos < str.length() && prev < str.length());
     return tokens;
 }

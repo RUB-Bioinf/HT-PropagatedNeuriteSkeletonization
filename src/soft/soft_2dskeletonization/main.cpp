@@ -226,7 +226,7 @@ int main(int argc, char **argv) {
     }
     vector <pair<string,string> >  metadata = inputMetadata();
     int result = inputFolderGrabbing("../resources", metadata);
-    cout << "Programm finished" <<endl;
+    cout << "Program finished" <<endl;
     return result;
 }
 
@@ -651,7 +651,9 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         int nucleusCounter = countNucleus(srcDAPI);
         writeCSVDataResult(nodeList, branchList, distanceList, timeList, skeletonPointSingleCountList,
                            skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
+        cout << "Successfully created and populated results CSV file with data!" <<endl;
 
+        try{
         Mat completeWithoutDistanceTrans;
         cv::subtract(bw, result, completeWithoutDistanceTrans);
         string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
@@ -684,6 +686,10 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string,string> >  met
         string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
         //imwrite(filenameMultiChannelResult3, multiChannel3);
 	// TODO: Try/Catch this or make this optional via param?
+
+	    } catch (...) {
+            cout << "An error occurred saving additional image output, but the program will continue! (Your raw csv data is saved!)" <<endl;
+        }
     } else {
         throw logic_error("No contours found...");
     }

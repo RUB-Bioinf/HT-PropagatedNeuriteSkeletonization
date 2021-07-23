@@ -653,46 +653,46 @@ void splitContours(Mat srcAlexa, Mat srcDAPI, vector <pair<string, string>> meta
                            skeletonPointsCounterCompleteWithoutDist, nucleusCounter, resultFilename);
         cout << "Successfully created and populated results CSV file with data!" << endl;
 
-        try {
-            Mat completeWithoutDistanceTrans;
-            cv::subtract(bw, result, completeWithoutDistanceTrans);
-            string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
-            // imwrite(filename2, completeWithoutDistanceTrans);
-            // TODO: Try/Catch this or make this optional via param?
+        // try {
+        //     Mat completeWithoutDistanceTrans;
+        //     cv::subtract(bw, result, completeWithoutDistanceTrans);
+        //     string filename2 = setVariableFilenames("-CompleteWithoutDistanceTransform.png", 0);
+        //     // imwrite(filename2, completeWithoutDistanceTrans);
+        //     // TODO: Try/Catch this or make this optional via param?
 
-            Mat dist_8u_dapi;
-            cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
-            resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3), 0, 0, INTER_NEAREST);
-            Mat thres_dapi;
-            threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
-            thres_dapi.convertTo(thres_dapi, CV_8UC1);
-            SparseMat dapiBin(thres_dapi);
-            int dapiArea = dapiBin.nzcount();
+        //     Mat dist_8u_dapi;
+        //     cvtColor(srcDAPI, dist_8u_dapi, COLOR_BGR2GRAY);
+        //     resize(dist_8u_dapi, dist_8u_dapi, Size(dist_8u_dapi.cols * 3, dist_8u_dapi.rows * 3), 0, 0, INTER_NEAREST);
+        //     Mat thres_dapi;
+        //     threshold(dist_8u_dapi, thres_dapi, 200, 255, THRESH_BINARY);
+        //     thres_dapi.convertTo(thres_dapi, CV_8UC1);
+        //     SparseMat dapiBin(thres_dapi);
+        //     int dapiArea = dapiBin.nzcount();
 
-            generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter, metadata, branchList,
-                              dapiArea, maskedZytoplasmn);
+        //     generateCSVForIUF(imgfile, skeletonPointsCounterCompleteWithoutDist, nucleusCounter, metadata, branchList,
+        //                       dapiArea, maskedZytoplasmn);
 
-            Mat multiChannel = grayToBGR(thres_dapi, bw_merged, result);
+        //     Mat multiChannel = grayToBGR(thres_dapi, bw_merged, result);
 
-            Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
-            string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
-            //imwrite(filenameMultiChannelResult2, multiChannel2);
-            // TODO: Try/Catch this or make this optional via param?
-            string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
-            //imwrite(filenameMultiChannelResult, multiChannel);
-            // TODO: Try/Catch this or make this optional via param?
+        //     Mat multiChannel2 = grayToBGR(result, bw_merged, thres_dapi);
+        //     string filenameMultiChannelResult2 = setVariableFilenames("-ResultMultiChannel2.png", 0);
+        //     //imwrite(filenameMultiChannelResult2, multiChannel2);
+        //     // TODO: Try/Catch this or make this optional via param?
+        //     string filenameMultiChannelResult = setVariableFilenames("-ResultMultiChannel.png", 0);
+        //     //imwrite(filenameMultiChannelResult, multiChannel);
+        //     // TODO: Try/Catch this or make this optional via param?
 
-            Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
-            string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
-            //imwrite(filenameMultiChannelResult3, multiChannel3);
-            // TODO: Try/Catch this or make this optional via param?
+        //     Mat multiChannel3 = grayToBGR(bw_merged, thres_dapi, result);
+        //     string filenameMultiChannelResult3 = setVariableFilenames("-ResultMultiChannel3.png", 0);
+        //     //imwrite(filenameMultiChannelResult3, multiChannel3);
+        //     // TODO: Try/Catch this or make this optional via param?
 
-        } catch (...) {
-            cout
-                    << "An error occurred saving additional image output, but the program will continue! (Your raw csv data is saved!)"
-                    << endl;
-            // TODO: What happens when this fails? Will the program still work?
-        }
+        // } catch (...) {
+        //     cout
+        //             << "An error occurred saving additional image output, but the program will continue! (Your raw csv data is saved!)"
+        //             << endl;
+        //     // TODO: What happens when this fails? Will the program still work?
+        // }
     } else {
         throw logic_error("No contours found...");
     }
